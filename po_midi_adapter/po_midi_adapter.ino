@@ -315,7 +315,7 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     case PO_MIDI_CHANNEL:
         if (type == midi::ControlChange && PO_CC_CONTROL){
           switch(data1){
-            case MIDI_KNOB_9_CC: //mode
+            case MIDI_KNOB_1_CC: //mode
               op_mode = data2;
               switch(data2){
                 case PERF_MODE: /*fall through*/

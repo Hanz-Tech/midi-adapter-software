@@ -28,29 +28,39 @@
 #define MIDI_NOTE_23 82
 
 
-#define MIDI_KNOB_1_CC 1 //PO : mode, mode 0 : normal , mode 1 : fx, mode 2 : record , mode 3 : write
+#define MIDI_KNOB_1_CC 1 
                          //Synth : vco1 shape
 
-#define MIDI_KNOB_2_CC 2 //PO : sound 1-16
+#define MIDI_KNOB_2_CC 2 
                         //Synth : vco2 shape
 
-#define MIDI_KNOB_3_CC 3 //PO : pattern 1-16
+#define MIDI_KNOB_3_CC 3 
                          //Synth : Detune vco2
 
-#define MIDI_KNOB_4_CC 4 //PO : volume 1-16
+#define MIDI_KNOB_4_CC 4 
                          //Synth : vco 2 octave
 
 #define MIDI_KNOB_5_CC 5 //Synth : LFO Freq
 #define MIDI_KNOB_6_CC 6 //Synth : LFO Mod
 #define MIDI_KNOB_7_CC 7 //Synth : Filter Freq
+
 #define MIDI_KNOB_8_CC 8 //Synth : Filter Res
-#define MIDI_KNOB_9_CC 9 //Synth : Attack
+
+#define MIDI_KNOB_9_CC 9 //Synth : Attack , 
+						 //PO : mode 0 :perf , mode 1 : normal , mode 2 : fx, mode 3 : record , mode 4 : write
+
 #define MIDI_KNOB_10_CC 10 //Synth : Decay
+						   //PO : sound 1-16
+								
 #define MIDI_KNOB_11_CC 11 //Synth : Sustain
+						   //PO : pattern 1-16
+
 #define MIDI_KNOB_12_CC 12 //Synth : Released
+						   //PO : volume 1-16
+
 #define MIDI_KNOB_13_CC 13 //Synth : Delay time
 #define MIDI_KNOB_14_CC 14 //Synth : Delay feedback
-#define MIDI_KNOB_15_CC 15 //Synth :
+#define MIDI_KNOB_15_CC 15 //Synth : Mix vco1/vco2
 #define MIDI_KNOB_16_CC 16 //Synth : Volume
 
 
