@@ -15,20 +15,31 @@ In this repository you will find the firmware for the pocket operator midi adapt
 
 The code will only work on a **Teensy 3.6**
 
-# Uploading code
-1. Download or clone the repo
+[![PO-MA](https://raw.githubusercontent.com/PO-MIDI-Adapter/midi-adapter-hardware/master/photos/title.jpg)](https://www.youtube.com/watch?v=iIQ18DAJAU0 "PO-MA")
 
-2. You will need to first download and install [Arduino IDE](https://www.arduino.cc/en/main/software). Then download [Teensyduino](https://www.pjrc.com/teensy/td_download.html) and install on your computer in the same location where the Arduino IDE was installed.
- 
-3. Open Arduino IDE and open the .ino file.
+## Main Features
 
-4. Under Tools->Boards choose Teensy 3.6
+### 1.Make any Pocket operator MIDI compatible
+1. The adapter can act as a MIDI device and recveive MIDI signal via the micro USB port
+2. The adapter can act as a USB host. It can power on and receive signal from one or more MIDI controllers directly
+3. Specified MIDI signals are tranposed into GPIO output of the Teensy which we can used to "simulate" button press on the PO
+3. MIDI Thru; all midi signal received are send to the MIDI out port
+4. MIDI notes/channel/cc can be remaped to user's specs
 
-5. Under Tools->USB Type choose Serial + MIDI16
+### 2. Internal synth engine with dedicated sound output
+1. Programmed using the Teensy Audio Library
+2. 16 Midi controllable parameters
+3. Runs on seperate MIDI channel
 
-6. With the Teensy plugged in,click upload to upload
+### 4. Volcam FM velocity control
+1. Transpose note velocity in to MIDI CC
+## Flow Diagram
 
-The compiler might complain about an issue for conflicting library for the SD card, in this case you can delete the Arduino version found in `arduino/libraries/sd` 
+Here's the signal flow digram for the setup used in the previous video
+
+![Flow](https://raw.githubusercontent.com/PO-MIDI-Adapter/midi-adapter-sofware/master/flow.png)
+
+
 
 # Modes of operation
 
@@ -74,6 +85,9 @@ The compiler might complain about an issue for conflicting library for the SD ca
  15. MIDI_KNOB_15_CC  : Mix vco1/vco2
  16. MIDI_KNOB_16_CC  : Volume
  
+## Volca FM Velocity
+ By default the adapter will read velocity from midi notes and tranpose them in to the correct MIDI cc signal and sent via MIDI-OUT
+ The Volca FM channels are set by `VOLCAFM_MIDI_CHANNEL_1` and `VOLCAFM_MIDI_CHANNEL_2`. You can either set 1 or both channels
 
 # Modifying MIDI assignment 
 
@@ -149,3 +163,18 @@ MIDI assignment can be found in `midi_settings.h` where you can change the midi 
 14. MIDI_KNOB_14_CC : 14
 15. MIDI_KNOB_15_CC : 15
 16. MIDI_KNOB_16_CC : 16
+
+# Uploading code
+1. Download or clone the repo
+
+2. You will need to first download and install [Arduino IDE](https://www.arduino.cc/en/main/software). Then download [Teensyduino](https://www.pjrc.com/teensy/td_download.html) and install on your computer in the same location where the Arduino IDE was installed.
+ 
+3. Open Arduino IDE and open the .ino file.
+
+4. Under Tools->Boards choose Teensy 3.6
+
+5. Under Tools->USB Type choose Serial + MIDI16
+
+6. With the Teensy plugged in,click upload to upload
+
+The compiler might complain about an issue for conflicting library for the SD card, in this case you can delete the Arduino version found in `arduino/libraries/sd` 
