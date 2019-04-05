@@ -1,5 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+# Disclaimer
+
 Copyright 2019 PO-MA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -51,7 +53,7 @@ Here's the signal flow digram for the setup used in the previous video
   
   There are two modes of operation, mode one is for controller with more than 16 pads/keys and mode 2 for controller with 16 pads/keys +  at least 3 knob.  The modes can be switched by `PO_CC_CONTROL`.
 
-  1. When `PO_CC_CONTROL` is 0, the adapter is in mode 1, this means all 23 buttons on the PO are assigned to sperate midi notes. See     below for more specification on midi assignemnt
+  1. When `PO_CC_CONTROL` is 0, the adapter is in mode 1, this means all 23 buttons on the PO are assigned to sperate midi notes. See     below for more specification on midi assignemnt. **This is probably the mode you want to use and it is the mode used in the video**
   2. In Mode 2 (`PO_CC_CONTROL` is 1), there is MIDI_KNOB_1_CC which can switch the behavior of the midi keys/pads.
   
     1. MIDI_KNOB_1_CC is 0  -> The midi pads/keys are assigned to the 1-16 buttons on the PO
@@ -88,6 +90,9 @@ Here's the signal flow digram for the setup used in the previous video
 ## Volca FM Velocity
  By default the adapter will read velocity from midi notes and tranpose them in to the correct MIDI cc signal and sent via MIDI-OUT
  The Volca FM channels are set by `VOLCAFM_MIDI_CHANNEL_1` and `VOLCAFM_MIDI_CHANNEL_2`. You can either set 1 or both channels
+ 
+## Transpose Control 
+ By default tranpose control are not send to the MIDI out, but you can change that by setting `DISABLE_TRANSPORT` to 0
 
 # Modifying MIDI assignment 
 
