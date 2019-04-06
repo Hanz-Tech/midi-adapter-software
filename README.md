@@ -33,6 +33,10 @@ The code will only work on a **Teensy 3.6**
 2. 16 Midi controllable parameters
 3. Runs on seperate MIDI channel
 
+### 3. MIDI Merging
+1. Capable of hosting multiple USB MIDI controllers and merging all signal together into a 5-DIN MIDI OUTPUT and a USB MIDI Output
+2. Can acts as a MIDI compliant USB device
+
 ### 4. Volca FM velocity control
 1. Transpose note velocity in to MIDI CC
 ## Flow Diagram
