@@ -27,7 +27,7 @@
 #define PO_BUTTON_SPECIAL 17
 #define PO_POT_A 22
 #define PO_POT_B 21
-#define CLOCKSYNCPIN A21
+#define CLOCKSYNCPIN A6
 
 //Midi channel and other options
 #define PO_MIDI_CHANNEL 1 //MIDI channel to control the PO

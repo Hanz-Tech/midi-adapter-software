@@ -1,19 +1,36 @@
 #include "clock.h"
 
-Clock::Clock(uint8_t sync_pin){
-    pin_sync_out = sync_pin;
+
+static int getBPMOrPulseLength(int fromValue) {
+  return ceil(float(30000) / fromValue);
 }
 
-void Clock::updateTempo() {
-  millis_per_step = millis() - last_step;
+Clock::Clock(uint8_t pin_sync_out){
+    _pin_sync_out = pin_sync_out;
+    analogWrite(_pin_sync_out,0);
 }
 
-void Clock::advance() {
-  last_step = millis();;
-  step = (step + 1) % steps;
-  if((step * sync_out_ppqn * 2 / sync_in_ppqn) & 1) {
-    analogWrite(pin_sync_out, 0);
-  } else {
-    analogWrite(pin_sync_out, 255); //3v
+void Clock::setBPM(int newBpm) {
+  _bpm = newBpm;
+  if(newBpm >= MIN_BPM && newBpm <= MAX_BPM){
+    _pulseDuration = getBPMOrPulseLength(_bpm);
   }
 }
+
+void Clock::sendBPM(unsigned long curTime) {
+  if (_isLow) {
+      // see if we need to go high
+      _clickDuration = curTime - _lastTrig;
+
+      if (_clickDuration >= _pulseDuration) {
+        //go high
+        _isLow = false;
+        _lastTrig = curTime;
+      }
+  } else {
+    // go low if we need to stop clicking
+    _isLow = (curTime >= _lastTrig + CLICK_HIGH_DURATION);
+  }
+  analogWrite(_pin_sync_out, _isLow ? 0 : 255);
+}
+
