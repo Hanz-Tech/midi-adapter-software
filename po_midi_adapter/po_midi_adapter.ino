@@ -76,7 +76,7 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2, ui
 void startPlayback();
 void stopPlayback();
 void startOrStopPlayback();
-void thread_func();
+void processMidiClock();
 
 void setup() {
   MIDI1.begin(MIDI_CHANNEL_OMNI);
@@ -184,12 +184,9 @@ void loop() {
       const uint8_t *sys = midilist[port]->getSysExArray();
       activity = true;
       if (type == 0xF8){ // midi clock
-        curr_midi_clock_time = millis();
-        delta = 60000 / ( ( (float) (curr_midi_clock_time - prev_midi_clock_time)) * midi_ppqn);
-        clk->setBPM((int)(ceil)(delta));
-        //Serial.println((int)(ceil)(delta));
-        prev_midi_clock_time = curr_midi_clock_time;
-        MIDI1.send(mtype, data1, data2, channel);
+        processMidiClock();
+        mtype = (midi::MidiType)type;
+        MIDI1.send(mtype, data1, data2, channel);  
       }
       else{
         processMidi(type, channel, data1, data2,sys,false);
@@ -211,12 +208,9 @@ void loop() {
       // Normal messages, first we must convert usbMIDI's type (an ordinary
       // byte) to the MIDI library's special MidiType.
       if (type == 0xF8){ // midi clock
-        curr_midi_clock_time = micros();
-        delta = 60000 / ( ( (float) (curr_midi_clock_time - prev_midi_clock_time) / (float) 1000) * midi_ppqn);
-        clk->setBPM((int)(ceil)(delta));
-        Serial.println((int)(ceil)(delta));
-        prev_midi_clock_time = curr_midi_clock_time;
-        MIDI1.send(mtype, data1, data2, channel);
+        processMidiClock();
+        mtype = (midi::MidiType)type;
+        MIDI1.send(mtype, data1, data2, channel);  
       }
       else{
         processMidi(type, channel, data1, data2,sys,false);
@@ -335,7 +329,17 @@ void changePattern(uint8_t pattern){
   digitalWrite(PO_BUTTON_PATTERN, HIGH);
 }
 
+
+void processMidiClock(){
+  curr_midi_clock_time = millis();
+  delta = 60000 / ( ( (float) (curr_midi_clock_time - prev_midi_clock_time)) * midi_ppqn);
+  clk->setBPM((int)(ceil)(delta));
+  //Serial.println((int)(ceil)(delta));
+  prev_midi_clock_time = curr_midi_clock_time;
+}
+
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer){
+  mtype = (midi::MidiType)type;
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
     if(!disable_transport){
       MIDI1.send(mtype, data1, data2, channel);
@@ -358,112 +362,108 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
       sendToComputer(type, data1, data2, channel, sys, 0);
     }
     if((channel == volca_fm_midi_ch_1 || channel == volca_fm_midi_ch_2) && type == midi::NoteOn && volca_fm_velocity == 1){ //To enable keyboard velocity for VolcaFM
-      uint8_t type = 176; //0xB0
-      mtype = (midi::MidiType)type;
-      MIDI1.send(mtype, 41, data2, channel);
+      MIDI1.send((midi::MidiType)176, 41, data2, channel); //0xB0
     }
-    mtype = (midi::MidiType)type;
     MIDI1.send(mtype, data1, data2, channel);
-
   }
 
-    if(channel == po_midi_channel){
-        if (type == midi::ControlChange && po_cc_control){
-          if(data1 == midi_cc_knob[9]){ //mode
-            op_mode = data2;
-            switch(data2){
-              case PERF_MODE: /*fall through*/
-              case NORMAL_MODE:
-                digitalWrite(PO_BUTTON_SPECIAL,HIGH);
-                digitalWrite(PO_BUTTON_FX,HIGH);
-                if(isWriteMode){
-                  digitalWrite(PO_BUTTON_WRITE,LOW);
-                  delay(20);
-                  digitalWrite(PO_BUTTON_WRITE,HIGH);
-                  isWriteMode = false;
-                }
-                break;
-              case FX_MODE:
-                digitalWrite(PO_BUTTON_FX,LOW);
-                digitalWrite(PO_BUTTON_SPECIAL,HIGH);
-                if(isWriteMode){
-                  digitalWrite(PO_BUTTON_WRITE,LOW);
-                  delay(20);
-                  digitalWrite(PO_BUTTON_WRITE,HIGH);
-                  isWriteMode = false;
-                }
-                break;
-              case RECORD_MODE:
-                digitalWrite(PO_BUTTON_FX,HIGH);
-                digitalWrite(PO_BUTTON_SPECIAL,LOW);
-                if(isWriteMode){
-                  digitalWrite(PO_BUTTON_WRITE,LOW);
-                  delay(20);
-                  digitalWrite(PO_BUTTON_WRITE,HIGH);
-                  isWriteMode = false;
-                }
-                break;
-              case WRITE_MODE:
-                digitalWrite(PO_BUTTON_FX,HIGH);
-                digitalWrite(PO_BUTTON_SPECIAL,HIGH);
-                if(!isWriteMode){
-                  digitalWrite(PO_BUTTON_WRITE,LOW);
-                  delay(20);
-                  digitalWrite(PO_BUTTON_WRITE,HIGH);
-                  isWriteMode = true;
-                }
-                break;
-            }
-          }
-          else if(data1 == midi_cc_knob[10]){ //sounds
-            changeSound(data2);
-          }
-          else if(data1 == midi_cc_knob[11]){
-            changePattern(data2);
-          }
-          else if(data1 == midi_cc_knob[12]){
-            changeVolume(data2);
+  if(channel == po_midi_channel){
+      if (type == midi::ControlChange && po_cc_control){
+        if(data1 == midi_cc_knob[9]){ //mode
+          op_mode = data2;
+          switch(data2){
+            case PERF_MODE: /*fall through*/
+            case NORMAL_MODE:
+              digitalWrite(PO_BUTTON_SPECIAL,HIGH);
+              digitalWrite(PO_BUTTON_FX,HIGH);
+              if(isWriteMode){
+                digitalWrite(PO_BUTTON_WRITE,LOW);
+                delay(20);
+                digitalWrite(PO_BUTTON_WRITE,HIGH);
+                isWriteMode = false;
+              }
+              break;
+            case FX_MODE:
+              digitalWrite(PO_BUTTON_FX,LOW);
+              digitalWrite(PO_BUTTON_SPECIAL,HIGH);
+              if(isWriteMode){
+                digitalWrite(PO_BUTTON_WRITE,LOW);
+                delay(20);
+                digitalWrite(PO_BUTTON_WRITE,HIGH);
+                isWriteMode = false;
+              }
+              break;
+            case RECORD_MODE:
+              digitalWrite(PO_BUTTON_FX,HIGH);
+              digitalWrite(PO_BUTTON_SPECIAL,LOW);
+              if(isWriteMode){
+                digitalWrite(PO_BUTTON_WRITE,LOW);
+                delay(20);
+                digitalWrite(PO_BUTTON_WRITE,HIGH);
+                isWriteMode = false;
+              }
+              break;
+            case WRITE_MODE:
+              digitalWrite(PO_BUTTON_FX,HIGH);
+              digitalWrite(PO_BUTTON_SPECIAL,HIGH);
+              if(!isWriteMode){
+                digitalWrite(PO_BUTTON_WRITE,LOW);
+                delay(20);
+                digitalWrite(PO_BUTTON_WRITE,HIGH);
+                isWriteMode = true;
+              }
+              break;
           }
         }
-        else if (type ==  midi::NoteOn){
-            if(op_mode > PERF_MODE){
-              triggerPOControlNoteButton(data1,op_mode);
-            }
-            else{
-              triggerPONoteButton(data1);
-            }
+        else if(data1 == midi_cc_knob[10]){ //sounds
+          changeSound(data2);
         }
-        else if(type == midi::NoteOff){
-            if(op_mode > PERF_MODE){
-              releasePOControlNoteButton(data1,op_mode);
-            }
-            else{
-              releasePONoteButton(data1);
-            }
+        else if(data1 == midi_cc_knob[11]){
+          changePattern(data2);
         }
-    }
-    else if(channel == synth_midi_channel && synth_enabled){
-      //Serial.println(type);
-      if(type == midi::NoteOn){
-        //Serial.println("play synth");
-        synth1.playNote(data1,data2);
+        else if(data1 == midi_cc_knob[12]){
+          changeVolume(data2);
+        }
       }
-      else if (type == midi::AfterTouchPoly){
-        synth1.playPolyAftertouch(data1,data2);
-      }
-      else if (type == 208){
-        //Serial.println("af touch");
-        synth1.playMonoAftertouch(data1);
+      else if (type ==  midi::NoteOn){
+          if(op_mode > PERF_MODE){
+            triggerPOControlNoteButton(data1,op_mode);
+          }
+          else{
+            triggerPONoteButton(data1);
+          }
       }
       else if(type == midi::NoteOff){
-        //Serial.println("stop synth");
-        synth1.stopNote(data1);
+          if(op_mode > PERF_MODE){
+            releasePOControlNoteButton(data1,op_mode);
+          }
+          else{
+            releasePONoteButton(data1);
+          }
       }
-      else if(type == midi::ControlChange && data1 < 17){
-        //Serial.println(data2);
-        CALL_MEMBER_FN(synth1, synth_func_ptr[data1]) (data2*8);
-      }
+  }
+  else if(channel == synth_midi_channel && synth_enabled){
+    //Serial.println(type);
+    if(type == midi::NoteOn){
+      //Serial.println("play synth");
+      synth1.playNote(data1,data2);
     }
+    else if (type == midi::AfterTouchPoly){
+      synth1.playPolyAftertouch(data1,data2);
+    }
+    else if (type == 208){
+      //Serial.println("af touch");
+      synth1.playMonoAftertouch(data1);
+    }
+    else if(type == midi::NoteOff){
+      //Serial.println("stop synth");
+      synth1.stopNote(data1);
+    }
+    else if(type == midi::ControlChange && data1 < 17){
+      //Serial.println(data2);
+      CALL_MEMBER_FN(synth1, synth_func_ptr[data1]) (data2*8);
+    }
+  }
 
 }
 
@@ -488,14 +488,14 @@ bool loadSDConfig(){
     for(int i = 1 ; i < LEN(midi_note_str); i++){
       if(cfg.nameIs(midi_note_str[i])){
         midi_note[i] = cfg.getIntValue();
-        Serial.println("note found");
+        //Serial.println("note found");
         break;
       }
     }
     for(int i = 0 ; i < LEN(midi_cc_knob_str); i++){
       if(cfg.nameIs(midi_cc_knob_str[i])){
         midi_cc_knob[i] = cfg.getIntValue();
-        Serial.println("cc found");
+        //Serial.println("cc found");
         break;
       }
     }
