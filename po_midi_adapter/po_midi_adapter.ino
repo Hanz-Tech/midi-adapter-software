@@ -488,7 +488,9 @@ bool loadSDConfig(){
     for(int i = 1 ; i < LEN(midi_note_str); i++){
       if(cfg.nameIs(midi_note_str[i])){
         midi_note[i] = cfg.getIntValue();
+        note_map[i-1][0] = cfg.getIntValue();
         //Serial.println("note found");
+        //Serial.println(midi_note[i]);
         break;
       }
     }
