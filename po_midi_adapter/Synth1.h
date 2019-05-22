@@ -73,10 +73,10 @@ class Synth1{
             WAVEFORM_SAMPLE_HOLD,
         };
         //ADSR
-        int attackTime;
-        int decayTime;
-        float sustainLevel;
-        int releaseTime;
+        int attackTime = 1;
+        int decayTime = 1;
+        float sustainLevel = 1;
+        int releaseTime = 1;
         //Filter ADSR
         int attackTimeFilter = 0;
         int decayTimeFilter = 0;

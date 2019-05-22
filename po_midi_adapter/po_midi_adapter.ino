@@ -9,6 +9,8 @@
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
+#define FIRMWARE_VERSION "1.1.1"
+
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI1);
 
@@ -81,6 +83,9 @@ void processMidiClock();
 void setup() {
   MIDI1.begin(MIDI_CHANNEL_OMNI);
   Serial.begin(115200);
+  Serial.println("PO-MA");
+  Serial.println("Firmware Version");
+  Serial.println(FIRMWARE_VERSION);
   pinMode(PO_BUTTON_1, OUTPUT);
   pinMode(PO_BUTTON_2, OUTPUT);
   pinMode(PO_BUTTON_3, OUTPUT);
@@ -158,7 +163,6 @@ void setup() {
   //Serial.println("PO_MIDI_SHIELD");
   delay(10);
   myusb.begin();
-  DAC0_C0 &= 0b10111111;
   if(sync_out_enabled){
     pinMode(CLOCKSYNCPIN,OUTPUT);
     clk = new Clock(CLOCKSYNCPIN);
@@ -331,10 +335,10 @@ void changePattern(uint8_t pattern){
 
 
 void processMidiClock(){
-  curr_midi_clock_time = millis();
-  delta = 60000 / ( ( (float) (curr_midi_clock_time - prev_midi_clock_time)) * midi_ppqn);
+  curr_midi_clock_time = micros();
+  delta = 60000 / ( ( (float) ((curr_midi_clock_time - prev_midi_clock_time) / float(1000) )) * midi_ppqn);
   clk->setBPM((int)(ceil)(delta));
-  //Serial.println((int)(ceil)(delta));
+  Serial.println((int)(ceil)(delta));
   prev_midi_clock_time = curr_midi_clock_time;
 }
 
