@@ -9,7 +9,7 @@
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
-#define FIRMWARE_VERSION "1.1.1"
+#define FIRMWARE_VERSION "1.2.1"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI1);
@@ -234,7 +234,46 @@ void loop() {
   if (ledOnMillis > 15) {
     digitalWriteFast(13, LOW);  // LED off
   }
+
+  if (MIDI1.read()) {
+    // get the Serial IN MIDI message, defined by these 5 numbers (except SysEX)
+    byte type = MIDI1.getType();
+    byte channel = MIDI1.getChannel();
+    byte data1 = MIDI1.getData1();
+    byte data2 = MIDI1.getData2();
+    const uint8_t *sys = MIDI1.getSysExArray();
+    //byte cable = usbMIDI.getCable();
+
+    // forward this message to the Serial MIDI OUT ports
+    if (type != usbMIDI.SystemExclusive) {
+      // Normal messages, first we must convert usbMIDI's type (an ordinary
+      // byte) to the MIDI library's special MidiType.
+      if (type == 0xF8){ // midi clock
+        processMidiClock();
+        mtype = (midi::MidiType)type;
+        MIDI1.send(mtype, data1, data2, channel);  
+      }
+      else{
+        processMidi(type, channel, data1, data2,sys,false);
+      }
+    } else {
+      // SysEx messages are special.  The message length is given in data1 & data2
+      unsigned int SysExLength = data1 + data2 * 256;
+      MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
+    }
+    activity = true;
+  }
+  // blink the LED when any activity has happened
+  if (activity) {
+    digitalWriteFast(13, HIGH); // LED on
+    ledOnMillis = 0;
+  }
+  if (ledOnMillis > 15) {
+    digitalWriteFast(13, LOW);  // LED off
+  }
 }
+
+
 
 void sendToComputer(byte type, byte data1, byte data2, byte channel, const uint8_t *sysexarray, byte cable)
 {
