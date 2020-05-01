@@ -112,6 +112,8 @@ void setup() {
   
 
   pinMode(13, OUTPUT); // LED pin
+  digitalWrite(13, HIGH);
+  delay(500);
   digitalWrite(13, LOW);
 
   digitalWrite(PO_BUTTON_1, HIGH);
@@ -376,8 +378,8 @@ void changePattern(uint8_t pattern){
 void processMidiClock(){
   curr_midi_clock_time = micros();
   delta = 60000 / ( ( (float) ((curr_midi_clock_time - prev_midi_clock_time) / float(1000) )) * midi_ppqn);
-  clk->setBPM((int)(ceil)(delta));
-  Serial.println((int)(ceil)(delta));
+  clk->setBPM((int)(floor)(delta));
+  Serial.println((int)(floor)(delta));
   prev_midi_clock_time = curr_midi_clock_time;
 }
 
@@ -390,12 +392,14 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     if(type == 0xFA){
       if(!isPlaying){
         startOrStopPlayback();
+        clk->start();
         isPlaying = !isPlaying;
       }
     }
     else if(type == 0xFC){
       if(isPlaying){
         startOrStopPlayback();
+        clk->stop();
         isPlaying = !isPlaying;
       }
     }

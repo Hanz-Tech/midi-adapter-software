@@ -238,7 +238,7 @@ void Synth1::init(){
     lfoenvelope.amplitude(1);
     voiceBPulse = false;
 
-    dacs1.analogReference(INTERNAL);
+    //dacs1.analogReference(INTERNAL);
 }
 void Synth1::playNote(uint8_t note, uint8_t velocity){
     float vel = log(float(velocity)) / log(float(127));

@@ -7,7 +7,17 @@ static int getBPMOrPulseLength(int fromValue) {
 
 Clock::Clock(uint8_t pin_sync_out){
     _pin_sync_out = pin_sync_out;
-    analogWrite(_pin_sync_out,0);
+    digitalWrite(_pin_sync_out, LOW);
+}
+
+void Clock::stop(){
+  Serial.println("stop lcock");
+  _isStarted = false;
+}
+
+void Clock::start(){
+  Serial.println("start lcock");
+  _isStarted = true;
 }
 
 void Clock::setBPM(int newBpm) {
@@ -18,19 +28,27 @@ void Clock::setBPM(int newBpm) {
 }
 
 void Clock::sendBPM(unsigned long curTime) {
-  if (_isLow) {
-      // see if we need to go high
-      _clickDuration = curTime - _lastTrig;
-
-      if (_clickDuration >= _pulseDuration) {
-        //go high
-        _isLow = false;
-        _lastTrig = curTime;
-      }
-  } else {
-    // go low if we need to stop clicking
-    _isLow = (curTime >= _lastTrig + CLICK_HIGH_DURATION);
+  if(_isStarted){
+    if (_isLow) {
+        // see if we need to go high
+        _clickDuration = curTime - _lastTrig;
+  
+        if (_clickDuration >= _pulseDuration) {
+          //go high
+          _isLow = false;
+          _lastTrig = curTime;
+        }
+    } else {
+      // go low if we need to stop clicking
+      _isLow = (curTime >= _lastTrig + CLICK_HIGH_DURATION);
+    }
+    analogWrite(_pin_sync_out, _isLow ? 0 : 255);
   }
-  analogWrite(_pin_sync_out, _isLow ? 0 : 255);
+  else{
+    digitalWrite(_pin_sync_out, LOW);
+  }
 }
 
+bool Clock::getStatus() {
+  return _isStarted;
+}

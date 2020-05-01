@@ -10,6 +10,9 @@ class Clock{
         Clock(uint8_t pin_sync_out);
         void setBPM(int bpm);
         void sendBPM(unsigned long curTime);
+        void stop();
+        void start();
+        bool getStatus();
 
     private:
         int _pin_sync_out = 0;
@@ -18,6 +21,7 @@ class Clock{
         int _pulseDuration = 0;
         int _bpm = 120;
         int _clickDuration = 0;
+        bool _isStarted = false;
 
 };
 
