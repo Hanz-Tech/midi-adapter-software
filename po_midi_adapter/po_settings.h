@@ -4,8 +4,8 @@
 //Teensy GPIO mapping to PO button
 #define PO_BUTTON_1 5
 #define PO_BUTTON_2 6
-#define PO_BUTTON_3 19
-#define PO_BUTTON_4 18
+#define PO_BUTTON_3 18
+#define PO_BUTTON_4 19
 #define PO_BUTTON_5 10
 #define PO_BUTTON_6 11
 #define PO_BUTTON_7 14
@@ -19,7 +19,7 @@
 #define PO_BUTTON_15 34
 #define PO_BUTTON_16 33
 #define PO_BUTTON_SOUND 2
-#define PO_BUTTON_PATTERN 3
+#define PO_BUTTON_PATTERN 0
 #define PO_BUTTON_WRITE 35
 #define PO_BUTTON_PLAY 36
 #define PO_BUTTON_FX 16
@@ -27,7 +27,7 @@
 #define PO_BUTTON_SPECIAL 17
 #define PO_POT_A 22
 #define PO_POT_B 21
-#define CLOCKSYNCPIN A6
+#define CLOCKSYNCPIN 37
 
 //Midi channel and other options
 #define PO_MIDI_CHANNEL 1 //MIDI channel to control the PO
