@@ -9,7 +9,7 @@
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
-#define FIRMWARE_VERSION "1.3.0"
+#define FIRMWARE_VERSION "2.0.0"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
