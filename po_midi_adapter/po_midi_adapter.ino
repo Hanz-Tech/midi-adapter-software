@@ -4,6 +4,7 @@
 #include <MIDI.h>        // access to serial (5 pin DIN) MIDI
 #include <USBHost_t36.h> // access to USB MIDI devices (plugged into 2nd USB port)
 #include "po_settings.h"
+#include "Synth1.h"
 #include "clock.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
@@ -12,7 +13,7 @@
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial7, MIDI2);
+
 // Create the ports for USB devices plugged into Teensy's 2nd USB port (via hubs)
 USBHost myusb;
 USBHub hub1(myusb);
@@ -36,8 +37,14 @@ midi::MidiType mtype;
 uint8_t op_mode = 0;
 bool isWriteMode = false;
 bool isPlaying = false;
+Synth1 synth1;
+int synth_enabled = 1;
 Clock *clk;
-
+typedef void (Synth1::*Synth1MemFn)(uint32_t midi_cc);
+static Synth1MemFn synth_func_ptr[18] = {&Synth1::stub,&Synth1::changeVCO1Shape, &Synth1::changeVCO2Shape, &Synth1::changeDetune2,&Synth1::changeOct2,
+                            &Synth1::changeLFOFreq,&Synth1::changeLFOMod,&Synth1::changeFilterFreq,&Synth1::changeFilterRes,
+                        &Synth1::changeAttack,&Synth1::changeDecay,&Synth1::changeSustain,&Synth1::changeRelease,
+                        &Synth1::changeDelayTime,&Synth1::changeDelayFeedback,&Synth1::changeMix,&Synth1::changeVolume,&Synth1::changePolyphony};
 
 const char CONFIG_FILE[] = "config.cfg";
 const int chipSelect = BUILTIN_SDCARD;
@@ -75,7 +82,6 @@ void processMidiClock();
 
 void setup() {
   MIDI1.begin(MIDI_CHANNEL_OMNI);
-  MIDI2.begin(MIDI_CHANNEL_OMNI);
   Serial.begin(115200);
   Serial.println("PO-MA");
   Serial.println("Firmware Version");
@@ -163,6 +169,10 @@ void setup() {
     pinMode(CLOCKSYNCPIN,OUTPUT);
     clk = new Clock(CLOCKSYNCPIN);
   }
+  if(synth_enabled){
+    synth1 = Synth1();
+    synth1.init();
+  }
 }
 
 void loop() {
@@ -182,8 +192,7 @@ void loop() {
       if (type == 0xF8){ // midi clock
         processMidiClock();
         mtype = (midi::MidiType)type;
-        MIDI1.send(mtype, data1, data2, channel);
-        MIDI2.send(mtype, data1, data2, channel);
+        MIDI1.send(mtype, data1, data2, channel);  
       }
       else{
         processMidi(type, channel, data1, data2,sys,false);
@@ -207,8 +216,7 @@ void loop() {
       if (type == 0xF8){ // midi clock
         processMidiClock();
         mtype = (midi::MidiType)type;
-        MIDI1.send(mtype, data1, data2, channel);
-        MIDI2.send(mtype, data1, data2, channel);  
+        MIDI1.send(mtype, data1, data2, channel);  
       }
       else{
         processMidi(type, channel, data1, data2,sys,false);
@@ -217,7 +225,6 @@ void loop() {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
-      MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
     }
     activity = true;
   }
@@ -255,35 +262,6 @@ void loop() {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
-    }
-    activity = true;
-  }
-
-  if (MIDI2.read()) {
-    // get the Serial IN MIDI message, defined by these 5 numbers (except SysEX)
-    byte type = MIDI2.getType();
-    byte channel = MIDI2.getChannel();
-    byte data1 = MIDI2.getData1();
-    byte data2 = MIDI2.getData2();
-    const uint8_t *sys = MIDI2.getSysExArray();
-    //byte cable = usbMIDI.getCable();
-
-    // forward this message to the Serial MIDI OUT ports
-    if (type != usbMIDI.SystemExclusive) {
-      // Normal messages, first we must convert usbMIDI's type (an ordinary
-      // byte) to the MIDI library's special MidiType.
-      if (type == 0xF8){ // midi clock
-        processMidiClock();
-        mtype = (midi::MidiType)type;
-        MIDI2.send(mtype, data1, data2, channel);  
-      }
-      else{
-        processMidi(type, channel, data1, data2,sys,false);
-      }
-    } else {
-      // SysEx messages are special.  The message length is given in data1 & data2
-      unsigned int SysExLength = data1 + data2 * 256;
-      MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
     }
     activity = true;
   }
@@ -410,7 +388,6 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
     if(!disable_transport){
       MIDI1.send(mtype, data1, data2, channel);
-      MIDI2.send(mtype, data1, data2, channel);
     }
     if(type == 0xFA){
       if(!isPlaying){
@@ -433,10 +410,8 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     }
     if((channel == volca_fm_midi_ch_1 || channel == volca_fm_midi_ch_2) && type == midi::NoteOn && volca_fm_velocity == 1){ //To enable keyboard velocity for VolcaFM
       MIDI1.send((midi::MidiType)176, 41, data2, channel); //0xB0
-      MIDI2.send((midi::MidiType)176, 41, data2, channel); //0xB0
     }
     MIDI1.send(mtype, data1, data2, channel);
-    MIDI2.send(mtype, data1, data2, channel);
   }
 
   if(channel == po_midi_channel){
@@ -514,6 +489,29 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
           }
       }
   }
+  else if(channel == synth_midi_channel && synth_enabled){
+    //Serial.println(type);
+    if(type == midi::NoteOn){
+      //Serial.println("play synth");
+      synth1.playNote(data1,data2);
+    }
+    else if (type == midi::AfterTouchPoly){
+      synth1.playPolyAftertouch(data1,data2);
+    }
+    else if (type == 208){
+      //Serial.println("af touch");
+      synth1.playMonoAftertouch(data1);
+    }
+    else if(type == midi::NoteOff){
+      //Serial.println("stop synth");
+      synth1.stopNote(data1);
+    }
+    else if(type == midi::ControlChange && data1 < 17){
+      //Serial.println(data2);
+      CALL_MEMBER_FN(synth1, synth_func_ptr[data1]) (data2*8);
+    }
+  }
+
 }
 
 void startOrStopPlayback(){
@@ -576,6 +574,9 @@ bool loadSDConfig(){
     }
     else if(cfg.nameIs("midi_ppqn")){
       midi_ppqn = cfg.getIntValue();
+    }
+    else if(cfg.nameIs("synth_enabled")){
+      synth_enabled = cfg.getIntValue();
     }
   }
   cfg.end();
