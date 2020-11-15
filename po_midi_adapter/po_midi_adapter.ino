@@ -9,10 +9,11 @@
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
-#define FIRMWARE_VERSION "2.0.0"
+#define FIRMWARE_VERSION "2.1.0"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial7, MIDI2);
 
 // Create the ports for USB devices plugged into Teensy's 2nd USB port (via hubs)
 USBHost myusb;
@@ -82,6 +83,7 @@ void processMidiClock();
 
 void setup() {
   MIDI1.begin(MIDI_CHANNEL_OMNI);
+  MIDI2.begin(MIDI_CHANNEL_OMNI);
   Serial.begin(115200);
   Serial.println("PO-MA");
   Serial.println("Firmware Version");
@@ -193,6 +195,7 @@ void loop() {
         processMidiClock();
         mtype = (midi::MidiType)type;
         MIDI1.send(mtype, data1, data2, channel);  
+        MIDI2.send(mtype, data1, data2, channel);
       }
       else{
         processMidi(type, channel, data1, data2,sys,false);
@@ -216,7 +219,8 @@ void loop() {
       if (type == 0xF8){ // midi clock
         processMidiClock();
         mtype = (midi::MidiType)type;
-        MIDI1.send(mtype, data1, data2, channel);  
+        MIDI1.send(mtype, data1, data2, channel);
+        MIDI2.send(mtype, data1, data2, channel);
       }
       else{
         processMidi(type, channel, data1, data2,sys,false);
@@ -225,6 +229,7 @@ void loop() {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
+      MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
     }
     activity = true;
   }
@@ -265,6 +270,36 @@ void loop() {
     }
     activity = true;
   }
+
+  if (MIDI2.read()) {
+    // get the Serial IN MIDI message, defined by these 5 numbers (except SysEX)
+    byte type = MIDI2.getType();
+    byte channel = MIDI2.getChannel();
+    byte data1 = MIDI2.getData1();
+    byte data2 = MIDI2.getData2();
+    const uint8_t *sys = MIDI2.getSysExArray();
+    //byte cable = usbMIDI.getCable();
+
+    // forward this message to the Serial MIDI OUT ports
+    if (type != usbMIDI.SystemExclusive) {
+      // Normal messages, first we must convert usbMIDI's type (an ordinary
+      // byte) to the MIDI library's special MidiType.
+      if (type == 0xF8){ // midi clock
+        processMidiClock();
+        mtype = (midi::MidiType)type;
+        MIDI2.send(mtype, data1, data2, channel);  
+      }
+      else{
+        processMidi(type, channel, data1, data2,sys,false);
+      }
+    } else {
+      // SysEx messages are special.  The message length is given in data1 & data2
+      unsigned int SysExLength = data1 + data2 * 256;
+      MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
+    }
+    activity = true;
+  }
+
   // blink the LED when any activity has happened
   if (activity) {
     digitalWriteFast(13, HIGH); // LED on
@@ -388,6 +423,7 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
     if(!disable_transport){
       MIDI1.send(mtype, data1, data2, channel);
+      MIDI2.send(mtype, data1, data2, channel);
     }
     if(type == 0xFA){
       if(!isPlaying){
@@ -410,8 +446,10 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     }
     if((channel == volca_fm_midi_ch_1 || channel == volca_fm_midi_ch_2) && type == midi::NoteOn && volca_fm_velocity == 1){ //To enable keyboard velocity for VolcaFM
       MIDI1.send((midi::MidiType)176, 41, data2, channel); //0xB0
+      MIDI2.send((midi::MidiType)176, 41, data2, channel); //0xB0
     }
     MIDI1.send(mtype, data1, data2, channel);
+    MIDI2.send(mtype, data1, data2, channel);
   }
 
   if(channel == po_midi_channel){
