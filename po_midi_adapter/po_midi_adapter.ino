@@ -68,7 +68,7 @@ void releasePOControlNoteButton(uint8_t note, uint8_t op_mode);
 void changeSound(uint8_t sound);
 void changeVolume(uint8_t vol);
 void changePattern(uint8_t pattern);
-void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2, uint8_t * sys, bool isSendToComputer);
+void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost);
 void startPlayback();
 void stopPlayback();
 void startOrStopPlayback();
@@ -186,10 +186,9 @@ void loop() {
         MIDI1.send(mtype, data1, data2, channel);  
         MIDI2.send(mtype, data1, data2, channel);
         sendToComputer(mtype, data1, data2, channel, sys, 0);
-        sendToUSBHost(mtype, data1, data2, channel);
       }
       else{
-        processMidi(type, channel, data1, data2,sys,true);
+        processMidi(type, channel, data1, data2,sys,true,false);
       }
     }
   }
@@ -215,7 +214,7 @@ void loop() {
         sendToUSBHost(mtype, data1, data2, channel);
       }
       else{
-        processMidi(type, channel, data1, data2,sys,false);
+        processMidi(type, channel, data1, data2,sys,false,true);
       }
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
@@ -253,9 +252,10 @@ void loop() {
         MIDI1.send(mtype, data1, data2, channel);
         MIDI2.send(mtype, data1, data2, channel);
         sendToComputer(mtype, data1, data2, channel, sys, 0);
+        sendToUSBHost(mtype, data1, data2, channel);
       }
       else{
-        processMidi(type, channel, data1, data2,sys,true);
+        processMidi(type, channel, data1, data2,sys,true,true);
       }
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
@@ -285,9 +285,10 @@ void loop() {
         MIDI1.send(mtype, data1, data2, channel);
         MIDI2.send(mtype, data1, data2, channel);
         sendToComputer(mtype, data1, data2, channel, sys, 0);
+        sendToUSBHost(mtype, data1, data2, channel);
       }
       else{
-        processMidi(type, channel, data1, data2,sys,true);
+        processMidi(type, channel, data1, data2,sys,true,true);
       }
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
@@ -420,22 +421,25 @@ void processMidiClock(){
   prev_midi_clock_time = curr_midi_clock_time;
 }
 
-void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer){
+void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost){
   mtype = (midi::MidiType)type;
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
-    if(!disable_transport){
-      MIDI1.send(mtype, data1, data2, channel);
-      MIDI2.send(mtype, data1, data2, channel);
+    MIDI1.send(mtype, data1, data2, channel);
+    MIDI2.send(mtype, data1, data2, channel);
+    if(isSendToComputer){
+      sendToComputer(type, data1, data2, channel, sys, 0);
+    }
+    if(isSendToUSBHost){
       sendToUSBHost(mtype, data1, data2, channel);
     }
-    if(type == 0xFA){
+    if(type == 0xFA && !disable_transport){
       if(!isPlaying){
         startOrStopPlayback();
         clk->start();
         isPlaying = !isPlaying;
       }
     }
-    else if(type == 0xFC){
+    else if(type == 0xFC && !disable_transport){
       if(isPlaying){
         startOrStopPlayback();
         clk->stop();
@@ -446,6 +450,9 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
   else {
     if(isSendToComputer){
       sendToComputer(type, data1, data2, channel, sys, 0);
+    }
+    if(isSendToUSBHost){
+//      sendToUSBHost(mtype, data1, data2, channel);
     }
     if((channel == volca_fm_midi_ch_1 || channel == volca_fm_midi_ch_2) && type == midi::NoteOn && volca_fm_velocity == 1){ //To enable keyboard velocity for VolcaFM
       MIDI1.send((midi::MidiType)176, 41, data2, channel); //0xB0
