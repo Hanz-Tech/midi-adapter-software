@@ -15,7 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 In this repository you will find the firmware for the pocket operator midi adapter. Hardware stuff can be found [here](https://github.com/PO-MIDI-Adapter/midi-adapter-hardware)
 
-The code will only work on a **Teensy 3.6**
+The code will only work on a **Teensy 4.1**
 
 [![PO-MA](https://raw.githubusercontent.com/PO-MIDI-Adapter/midi-adapter-hardware/master/photos/title.jpg)](https://www.youtube.com/watch?v=iIQ18DAJAU0 "PO-MA")
 
