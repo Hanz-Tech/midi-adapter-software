@@ -39,10 +39,5 @@ The code will only work on a **Teensy 4.1**
 
 ### 4. Volca FM velocity control
 1. Transpose note velocity in to MIDI CC
-## Flow Diagram
-
-Here's the signal flow digram for the setup used in the previous video
-
-![Flow](https://raw.githubusercontent.com/PO-MIDI-Adapter/midi-adapter-sofware/master/flow.png)
 
 **Please refer to the [wiki](https://github.com/PO-MIDI-Adapter/midi-adapter-software/wiki) for user instructions**
