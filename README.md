@@ -26,19 +26,15 @@ The code will only work on a **Teensy 4.1**
 ## Main Features
 
 ### 1.Make any Pocket operator MIDI compatible
-1. The adapter can act as a MIDI device and recveive MIDI signal via the micro USB port
+1. The adapter can act as a MIDI device and recveive MIDI signal via the micro USB port or MIDI IN port
 2. The adapter can act as a USB host. It can power on and receive signal from one or more MIDI controllers directly
 3. Specified MIDI signals are tranposed into GPIO output of the Teensy which we can used to "simulate" button press on the PO
 3. MIDI Thru; all midi signal received are send to the MIDI out port
 4. MIDI notes/channel/cc can be remaped to user's specs
 
-### 2. Internal synth engine with dedicated sound output
-1. Programmed using the Teensy Audio Library
-2. 16 Midi controllable parameters
-3. Runs on seperate MIDI channel
 
-### 3. MIDI Merging
-1. Capable of hosting multiple USB MIDI controllers and merging all signal together into a 5-DIN MIDI OUTPUT and a USB MIDI Output
+### 2. MIDI Merging
+1. Capable of hosting multiple USB MIDI controllers, receving MIDI IN and merging all signal together into a 5-DIN MIDI OUTPUT and a USB MIDI Output
 2. Can acts as a MIDI compliant USB device
 
 ### 4. Volca FM velocity control
