@@ -1,10 +1,8 @@
-#include <SD.h>
-#include <SDConfigFile.h>
-#include <SPI.h>
 #include <MIDI.h>        // access to serial (5 pin DIN) MIDI
 #include <USBHost_t36.h> // access to USB MIDI devices (plugged into 2nd USB port)
 #include "po_settings.h"
 #include "clock.h"
+#include "sd_load.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
 #define FIRMWARE_VERSION "2.2.1"
@@ -38,9 +36,11 @@ uint8_t op_mode = 0;
 bool isWriteMode = false;
 bool isPlaying = false;
 Clock *clk;
+SD_load *config;
 
-const char CONFIG_FILE[] = "config.cfg";
-const int chipSelect = BUILTIN_SDCARD;
+uint8_t** note_map;
+uint8_t* midi_cc_knob;
+uint8_t** transport_note_map;
 
 int po_midi_channel = 1;
 int synth_midi_channel = 2;
@@ -54,7 +54,6 @@ int sync_out_enabled = 1;
 int midi_ppqn = 24;
 unsigned long prev_midi_clock_time = 0;
 volatile unsigned long curr_midi_clock_time = 0;
-bool isThreadRunning = false;
 
 float delta = 0;
 void loadDefaultConfig();
@@ -139,25 +138,20 @@ void setup() {
   // makes isolating the power issue easier.
   delay(1500);
 
-  //Try to load config from SD if present
-  if (SD.begin(chipSelect)){
-    //Serial.println("card init");
-    if(loadSDConfig()){
-        digitalWrite(13, HIGH);   // set the LED on
-        delay(100);                  // wait for a second
-        digitalWrite(13, LOW);    // set the LED off
-        delay(100);
-        digitalWrite(13, HIGH);   // set the LED on
-        delay(100);                  // wait for a second
-        digitalWrite(13, LOW);    // set the LED off
-        delay(100);
-        digitalWrite(13, HIGH);   // set the LED on
-        delay(100);                  // wait for a second
-        digitalWrite(13, LOW);    // set the LED off
-    }
-  }
+  config = new SD_load();
+  po_midi_channel = config->get_po_midi_channel();
+  synth_midi_channel = config->get_synth_midi_channel();
+  disable_transport = config->get_disable_transport(); //1 == disable transport, 0 == enabled transport
+  po_cc_control = config->get_po_cc_control(); //0 == disable , 1 ==enable
+  volca_fm_velocity = config->get_volca_fm_velocity(); // 1 == enable, 0 == disable
+  volca_fm_midi_ch_1 = config->get_volca_fm_midi_ch_1();
+  volca_fm_midi_ch_2 = config->get_volca_fm_midi_ch_2();
+  sync_out_enabled = config->get_sync_out_enabled();
+  midi_ppqn = config->get_midi_ppqn();
+  note_map = config->get_note_map();
+  transport_note_map = config->get_transport_note_map();
+  midi_cc_knob = config->get_midi_cc_knob();
 
-  //Serial.println("PO_MIDI_SHIELD");
   delay(10);
   myusb.begin();
   if(sync_out_enabled){
@@ -372,8 +366,7 @@ void releasePOControlNoteButton(uint8_t note, uint8_t op_mode){
         digitalWrite(transport_note_map[i][1], HIGH);
       }
     }
-  }
-  else{
+  } else{
     for (uint8_t i = 0 ; i < LEN(note_map) ; i++){
       if(note_map[i][0] == note){
         digitalWrite(note_map[i][1], HIGH);
@@ -438,16 +431,14 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
         clk->start();
         isPlaying = !isPlaying;
       }
-    }
-    else if(type == 0xFC && !disable_transport){
+    } else if(type == 0xFC && !disable_transport){
       if(isPlaying){
         startOrStopPlayback();
         clk->stop();
         isPlaying = !isPlaying;
       }
     }
-  } 
-  else {
+  } else {
     if(isSendToComputer){
       sendToComputer(type, data1, data2, channel, sys, 0);
     }
@@ -510,30 +501,23 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
               }
               break;
           }
-        }
-        else if(data1 == midi_cc_knob[10]){ //sounds
+        } else if(data1 == midi_cc_knob[10]){ //sounds
           changeSound(data2);
-        }
-        else if(data1 == midi_cc_knob[11]){
+        } else if(data1 == midi_cc_knob[11]){
           changePattern(data2);
-        }
-        else if(data1 == midi_cc_knob[12]){
+        } else if(data1 == midi_cc_knob[12]){
           changeVolume(data2);
         }
-      }
-      else if (type ==  midi::NoteOn){
+      } else if (type ==  midi::NoteOn){
           if(op_mode > PERF_MODE){
             triggerPOControlNoteButton(data1,op_mode);
-          }
-          else{
+          } else{
             triggerPONoteButton(data1);
           }
-      }
-      else if(type == midi::NoteOff){
+      } else if(type == midi::NoteOff){
           if(op_mode > PERF_MODE){
             releasePOControlNoteButton(data1,op_mode);
-          }
-          else{
+          } else{
             releasePONoteButton(data1);
           }
       }
@@ -548,60 +532,4 @@ void startOrStopPlayback(){
       digitalWrite(transport_note_map[i][1], HIGH);
     }
   }
-}
-
-bool loadSDConfig(){
-  SDConfigFile cfg;
-  const uint8_t CONFIG_LINE_LENGTH = 127;
-  if(!cfg.begin(CONFIG_FILE, CONFIG_LINE_LENGTH)){
-    Serial.println("cfg failed");
-    return false;
-  }
-  while (cfg.readNextSetting()){
-    for(int i = 1 ; i < LEN(midi_note_str); i++){
-      if(cfg.nameIs(midi_note_str[i])){
-        midi_note[i] = cfg.getIntValue();
-        note_map[i-1][0] = cfg.getIntValue();
-        //Serial.println("note found");
-        //Serial.println(midi_note[i]);
-        break;
-      }
-    }
-    for(int i = 0 ; i < LEN(midi_cc_knob_str); i++){
-      if(cfg.nameIs(midi_cc_knob_str[i])){
-        midi_cc_knob[i] = cfg.getIntValue();
-        //Serial.println("cc found");
-        break;
-      }
-    }
-    if(cfg.nameIs("po_midi_channel")){
-      po_midi_channel = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("synth_midi_channel")){
-      synth_midi_channel = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("disable_transport")){
-      disable_transport = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("po_cc_control")){
-      po_cc_control = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("volca_fm_velocity")){
-      volca_fm_velocity = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("volca_fm_midi_ch_1")){
-      volca_fm_midi_ch_1 = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("volca_fm_midi_ch_2")){
-      volca_fm_midi_ch_2 = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("sync_out_enabled")){
-      sync_out_enabled = cfg.getIntValue();
-    }
-    else if(cfg.nameIs("midi_ppqn")){
-      midi_ppqn = cfg.getIntValue();
-    }
-  }
-  cfg.end();
-  return true;
 }
