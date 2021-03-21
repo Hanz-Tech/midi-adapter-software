@@ -73,14 +73,11 @@ void startPlayback();
 void stopPlayback();
 void startOrStopPlayback();
 void processMidiClock();
+void printMIDI(byte type, byte data1, byte data2, byte channel);
 
 void setup() {
   MIDI1.begin(MIDI_CHANNEL_OMNI);
   MIDI2.begin(MIDI_CHANNEL_OMNI);
-  Serial.begin(115200);
-  Serial.println("PO-MA");
-  Serial.println("Firmware Version");
-  Serial.println(FIRMWARE_VERSION);
   pinMode(PO_BUTTON_1, OUTPUT);
   pinMode(PO_BUTTON_2, OUTPUT);
   pinMode(PO_BUTTON_3, OUTPUT);
@@ -164,6 +161,12 @@ void setup() {
     pinMode(CLOCKSYNCPIN,OUTPUT);
     clk = new Clock(CLOCKSYNCPIN);
   }
+
+  Serial.begin(115200);
+  Serial.println("PO-MA");
+  Serial.println("Firmware Version");
+  Serial.println(FIRMWARE_VERSION);
+
 }
 
 void loop() {
@@ -422,6 +425,7 @@ void processMidiClock(){
 }
 
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost){
+  printMIDI(type, data1, data2, channel );
   mtype = (midi::MidiType)type;
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
     MIDI1.send(mtype, data1, data2, channel);
@@ -604,4 +608,13 @@ bool loadSDConfig(){
   }
   cfg.end();
   return true;
+}
+
+void printMIDI(byte type, byte data1, byte data2, byte channel ){
+  Serial.println(" ");
+  Serial.println(type);
+  Serial.println(channel);
+  Serial.println(data1);
+  Serial.println(data2);
+  Serial.println(" ");
 }
