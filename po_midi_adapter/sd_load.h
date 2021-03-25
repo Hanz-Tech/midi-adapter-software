@@ -113,15 +113,9 @@ class SD_load{
         int get_volca_fm_midi_ch_2(){ return _volca_fm_midi_ch_2; }
         int get_sync_out_enabled(){ return _sync_out_enabled; }
         int get_midi_ppqn(){ return _midi_ppqn; }
-        // uint8_t** get_note_map(){ return reinterpret_cast<uint8_t **>(_note_map); }
         void get_note_map( uint8_t note_map[23][2]) { note_map = _note_map; }
-        int get_note_map_length(){ return LEN(_note_map); }
-        // uint8_t** get_transport_note_map(){ return reinterpret_cast<uint8_t **>(_transport_note_map); }
         void get_transport_note_map(uint8_t transport_note_map[7][2]){ transport_note_map = _transport_note_map;}
-        // uint8_t* get_midi_cc_knob(){ return reinterpret_cast<uint8_t *>(_midi_cc_knob); }
         void get_midi_cc_knob(uint8_t midi_cc_knob[17]) { midi_cc_knob = _midi_cc_knob; }
-
-
 };
 
 #endif

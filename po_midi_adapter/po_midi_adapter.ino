@@ -331,8 +331,7 @@ void releasePONoteButton(uint8_t note){
 }
 
 void triggerPONoteButton(uint8_t note){
-  int length =  config->get_note_map_length();
-  for (uint8_t i = 0 ; i < length ; i++){
+  for (uint8_t i = 0 ; i < LEN(note_map) ; i++){
     if(note_map[i][0] == note){
       if(note_map[i][1] == PO_BUTTON_PLAY){
         isPlaying = !isPlaying;
