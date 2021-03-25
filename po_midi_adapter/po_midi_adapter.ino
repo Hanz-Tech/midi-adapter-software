@@ -38,9 +38,9 @@ bool isPlaying = false;
 Clock *clk;
 SD_load *config;
 
-uint8_t** note_map;
-uint8_t* midi_cc_knob;
-uint8_t** transport_note_map;
+uint8_t note_map[23][2];
+uint8_t midi_cc_knob[17];
+uint8_t transport_note_map[7][2];
 
 int po_midi_channel = 1;
 int synth_midi_channel = 2;
@@ -145,10 +145,9 @@ void setup() {
   volca_fm_midi_ch_2 = config->get_volca_fm_midi_ch_2();
   sync_out_enabled = config->get_sync_out_enabled();
   midi_ppqn = config->get_midi_ppqn();
-  note_map = config->get_note_map();
-  transport_note_map = config->get_transport_note_map();
-  midi_cc_knob = config->get_midi_cc_knob();
-  Serial.println(po_midi_channel);
+  config->get_note_map(note_map);
+  config->get_transport_note_map(transport_note_map);
+  config->get_midi_cc_knob(midi_cc_knob);
   delay(10);
   myusb.begin();
   if(sync_out_enabled){
@@ -160,6 +159,7 @@ void setup() {
   Serial.println("PO-MA");
   Serial.println("Firmware Version");
   Serial.println(FIRMWARE_VERSION);
+  
 
 }
 
@@ -331,12 +331,14 @@ void releasePONoteButton(uint8_t note){
 }
 
 void triggerPONoteButton(uint8_t note){
-  for (uint8_t i = 0 ; i < LEN(note_map) ; i++){
+  int length =  config->get_note_map_length();
+  for (uint8_t i = 0 ; i < length ; i++){
     if(note_map[i][0] == note){
       if(note_map[i][1] == PO_BUTTON_PLAY){
         isPlaying = !isPlaying;
       }
       digitalWrite(note_map[i][1], LOW);
+      Serial.println(note_map[i][1]);
     }
   }
 }
@@ -457,7 +459,7 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     MIDI2.send(mtype, data1, data2, channel);
     sendToUSBHost(mtype, data1, data2, channel);
   }
-
+  Serial.println(midi_cc_knob[9]);
   if(channel == po_midi_channel){
       if (type == midi::ControlChange && po_cc_control){
         if(data1 == midi_cc_knob[9]){ //mode

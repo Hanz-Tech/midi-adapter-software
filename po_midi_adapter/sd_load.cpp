@@ -55,7 +55,7 @@ const char *_midi_cc_knob_str[17] = {
 SD_load::SD_load(){
   if (SD.begin(chipSelect)){
     //Serial.println("card init");
-    if(loadSDConfig()){
+    if(this->loadSDConfig()){
         digitalWrite(13, HIGH);   // set the LED on
         delay(100);                  // wait for a second
         digitalWrite(13, LOW);    // set the LED off
