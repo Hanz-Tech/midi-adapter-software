@@ -6,7 +6,7 @@
 #include <SDConfigFile.h>
 #include "po_settings.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
-class SD_load{
+class SD_Load{
     private:
         int _po_midi_channel = 1;
         int _synth_midi_channel = 2;
@@ -103,7 +103,7 @@ class SD_load{
         };
         bool loadSDConfig();
     public:
-        SD_load();
+        SD_Load();
         int get_po_midi_channel(){ return _po_midi_channel; }
         int get_synth_midi_channel(){ return _synth_midi_channel; }
         int get_disable_transport(){ return _disable_transport; }

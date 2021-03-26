@@ -52,7 +52,7 @@ const char *_midi_cc_knob_str[17] = {
         "midi_cc_knob_16"
         };
 
-SD_load::SD_load(){
+SD_Load::SD_Load(){
   if (SD.begin(chipSelect)){
     //Serial.println("card init");
     if(this->loadSDConfig()){
@@ -71,7 +71,7 @@ SD_load::SD_load(){
   }
 }
 
-bool SD_load::loadSDConfig(){
+bool SD_Load::loadSDConfig(){
   SDConfigFile cfg;
   const uint8_t CONFIG_LINE_LENGTH = 127;
   if(!cfg.begin(CONFIG_FILE, CONFIG_LINE_LENGTH)){
