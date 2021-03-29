@@ -6,7 +6,7 @@
 #include "po_control.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
-#define FIRMWARE_VERSION "2.2.2"
+#define FIRMWARE_VERSION "2.2.2-beta"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
@@ -289,7 +289,7 @@ void processMidiClock(){
 }
 
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost){
-  printMIDI(type, data1, data2, channel );
+  // printMIDI(type, data1, data2, channel );
   mtype = (midi::MidiType)type;
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
     MIDI1.send(mtype, data1, data2, channel);

@@ -25,7 +25,6 @@ PO_Control::PO_Control(){
     _config->get_transport_note_map(_transport_note_map);
     _config->get_midi_cc_knob(_midi_cc_knob);
     _config->get_record_note_map(_record_note_map);
-    printArray(_record_note_map);
 }
 
 void PO_Control::releasePONoteButton(uint8_t note){
@@ -38,7 +37,6 @@ void PO_Control::releasePONoteButton(uint8_t note){
 
 void PO_Control::triggerPONoteRecord(uint8_t note){
     for (uint8_t i = 0 ; i < LEN(_record_note_map) ; i++){
-        Serial.println(_record_note_map[i][0]);
         if (_record_note_map[i][0] == note){
             digitalWrite(PO_BUTTON_SPECIAL, LOW);
             delay(50);
@@ -57,13 +55,11 @@ void PO_Control::releasePONoteRecord(){
 
 void PO_Control::triggerPONoteButton(uint8_t note){
   for (uint8_t i = 0 ; i < LEN(_note_map) ; i++){
-    Serial.println(_note_map[i][0]);
     if(_note_map[i][0] == note){
       if(_note_map[i][1] == PO_BUTTON_PLAY){
         _is_playing = !_is_playing;
       }
       digitalWrite(_note_map[i][1], LOW);
-      Serial.println(_note_map[i][1]);
     }
   }
 }
@@ -205,7 +201,6 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
         if (!_is_recording)
           this->triggerPOControlNoteButton(data1);
       } else{
-        Serial.println("execute");
         if (!_is_recording){
           this->triggerPONoteRecord(data1);
           if(!_is_recording){
