@@ -5,68 +5,23 @@ const int chipSelect = BUILTIN_SDCARD;
 
 bool loadSDConfig();
 
-const char *_midi_note_str[24] = {
-"0",
-"midi_note_1",
-"midi_note_2",
-"midi_note_3",
-"midi_note_4",
-"midi_note_5",
-"midi_note_6",
-"midi_note_7",
-"midi_note_8",
-"midi_note_9",
-"midi_note_10",
-"midi_note_11",
-"midi_note_12",
-"midi_note_13",
-"midi_note_14",
-"midi_note_15",
-"midi_note_16",
-"midi_note_sound",
-"midi_note_pattern",
-"midi_note_bpm",
-"midi_note_special",
-"midi_note_fx",
-"midi_note_play",
-"midi_note_write",
-};
 
-const char *_midi_cc_knob_str[17] = {
-        "0",
-        "midi_cc_knob_1",
-        "midi_cc_knob_2",
-        "midi_cc_knob_3",
-        "midi_cc_knob_4",
-        "midi_cc_knob_5",
-        "midi_cc_knob_6",
-        "midi_cc_knob_7",
-        "midi_cc_knob_8",
-        "midi_cc_knob_9",
-        "midi_cc_knob_10",
-        "midi_cc_knob_11",
-        "midi_cc_knob_12",
-        "midi_cc_knob_13",
-        "midi_cc_knob_14",
-        "midi_cc_knob_15",
-        "midi_cc_knob_16"
-        };
 
 SD_Load::SD_Load(){
   if (SD.begin(chipSelect)){
     //Serial.println("card init");
     if(this->loadSDConfig()){
-        digitalWrite(13, HIGH);   // set the LED on
-        delay(100);                  // wait for a second
-        digitalWrite(13, LOW);    // set the LED off
-        delay(100);
-        digitalWrite(13, HIGH);   // set the LED on
-        delay(100);                  // wait for a second
-        digitalWrite(13, LOW);    // set the LED off
-        delay(100);
-        digitalWrite(13, HIGH);   // set the LED on
-        delay(100);                  // wait for a second
-        digitalWrite(13, LOW);    // set the LED off
+      digitalWrite(13, HIGH);   // set the LED on
+      delay(100);                  // wait for a second
+      digitalWrite(13, LOW);    // set the LED off
+      delay(100);
+      digitalWrite(13, HIGH);   // set the LED on
+      delay(100);                  // wait for a second
+      digitalWrite(13, LOW);    // set the LED off
+      delay(100);
+      digitalWrite(13, HIGH);   // set the LED on
+      delay(100);                  // wait for a second
+      digitalWrite(13, LOW);    // set the LED off
     }
   }
 }
@@ -85,6 +40,13 @@ bool SD_Load::loadSDConfig(){
         _note_map[i-1][0] = cfg.getIntValue();
         //Serial.println("note found");
         //Serial.println(midi_note[i]);
+        break;
+      }
+    }
+    for(int i = 1 ; i < LEN(_midi_note_record_str); i++){
+      if(cfg.nameIs(_midi_note_record_str[i])){
+        _midi_record_note[i] = cfg.getIntValue();
+        _record_note_map[i-1][0] = cfg.getIntValue();
         break;
       }
     }
