@@ -57,6 +57,13 @@ bool SD_Load::loadSDConfig(){
         break;
       }
     }
+
+    for(int i = 0 ; i < LEN(_looper_control_note); i++){
+      if(cfg.nameIs(_looper_control_note_str[i])){
+        _looper_control_note[i] = cfg.getIntValue();
+        break;
+      }
+    }
     if(cfg.nameIs("po_midi_channel")){
       _po_midi_channel = cfg.getIntValue();
     }
@@ -83,6 +90,15 @@ bool SD_Load::loadSDConfig(){
     }
     else if(cfg.nameIs("midi_ppqn")){
       _midi_ppqn = cfg.getIntValue();
+    }
+    else if(cfg.nameIs("looper_enabled")){
+      _looper_enabled = cfg.getIntValue();
+    }
+    else if (cfg.nameIs("looper_autoplay_after_record")){
+      _looper_autoplay = cfg.getIntValue();
+    }
+    else if (cfg.nameIs("looper_transport_control_link")){
+      _looper_transport_control_link = cfg.getIntValue();
     }
   }
   cfg.end();

@@ -17,7 +17,9 @@ class SD_Load{
       int _volca_fm_midi_ch_2 = 16;
       int _sync_out_enabled = 1;
       int _midi_ppqn = 24;
-
+      int _looper_enabled = 1;
+      int _looper_autoplay = 1;
+      int _looper_transport_control_link = 1;
       //Midi Notes, these are used to trigger button 1-16 and sound,pattern.bpm....
       uint8_t _midi_note[24] = { //These are midi notes value
           0,
@@ -205,7 +207,16 @@ class SD_Load{
       {_midi_note[3],PO_BUTTON_PLAY},
       {_midi_note[4],PO_BUTTON_WRITE}
       };
-      
+
+      uint8_t _looper_control_note[2] = {
+        49, //start-stop
+        51, //clear
+      };
+
+      const char *_looper_control_note_str[2] = {
+        "midi_note_loop_start_stop",
+        "midi_note_loop_clear"
+      };
       bool loadSDConfig();
 
       void printArray( uint8_t a[][ 2 ] ) {
@@ -244,6 +255,20 @@ class SD_Load{
           }
         }
       }
+      void get_looper_control(uint8_t looper_control_note[2]){
+        for (int i = 0; i < 2 ; i++){
+          looper_control_note[i]  = _looper_control_note[i];
+        }
+      }
+      int get_is_looper_enabled(){
+        return _looper_enabled;
+      }
+      int get_is_looper_autoplay(){
+        return _looper_autoplay;
+      }
+      int get_looper_transport_control_link(){
+        return _looper_transport_control_link;
+      }
       void get_transport_note_map(uint8_t transport_note_map[7][2]){
           for (int i = 0; i < 7; i++){
             for (int j = 0; j < 2; j++){
@@ -252,7 +277,7 @@ class SD_Load{
           }
         }
       void get_midi_cc_knob(uint8_t midi_cc_knob[17]) {
-        for(int i = 0; i > 17; i++){
+        for(int i = 0; i < 17; i++){
           midi_cc_knob[i] = _midi_cc_knob[i];
         }
       }

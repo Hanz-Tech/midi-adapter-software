@@ -10,6 +10,7 @@ class PO_Control{
       uint8_t _note_map[23][2];
       uint8_t _midi_cc_knob[17];
       uint8_t _transport_note_map[7][2];
+      uint8_t _looper_control[2];
       bool _is_playing = false;
       bool _is_write_mode = false;
       int _po_midi_channel = 1;
@@ -21,25 +22,40 @@ class PO_Control{
       int _volca_fm_midi_ch_2 = 16;
       int _is_one_button_record = 1;
       bool _is_recording = false;
+      bool _is_looping = false;
+      unsigned long _loop_start_time = 0;
+      unsigned long _loop_stop_time = 0;
+      unsigned long _loop_interval_time = 0;
+      int _current_loop_track = -1;
+      int _looper_transport_control_link = 0;
+      unsigned long _current_loop_time = 0;
+      unsigned long _previous_loop_time = 0;
       int _sync_out_enabled = 1;
       int _midi_ppqn = 24;
       unsigned long _prev_midi_clock_time = 0;
       volatile unsigned long _curr_midi_clock_time = 0;
+  
 
       SD_Load *_config;
-    public:
-      PO_Control();
+
+      void changeSound(uint8_t sound);
+      void changeVolume(uint8_t vol);
+      void changePattern(uint8_t pattern);
+
       void triggerPONoteButton(uint8_t note);
       void releasePONoteButton(uint8_t note);
       void triggerPOControlNoteButton(uint8_t note);
       void releasePOControlNoteButton(uint8_t note);
-      void changeSound(uint8_t sound);
-      void changeVolume(uint8_t vol);
-      void changePattern(uint8_t pattern);
-      void startOrStopPlayback();
-      void execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2);
+
       void triggerPONoteRecord(uint8_t note);
       void releasePONoteRecord();
+
+      void checkForLooperControl(uint8_t data1);
+    public:
+      PO_Control();
+
+      void startOrStopPlayback();
+      void execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2);
 
       int get_po_midi_channel(){ return _po_midi_channel; }
       int get_disable_transport(){ return _disable_transport; }
@@ -50,8 +66,15 @@ class PO_Control{
       int get_sync_out_enabled(){ return _sync_out_enabled; }
       int get_midi_ppqn(){ return _midi_ppqn; }
       bool get_is_playing() { return _is_playing; }
+      bool get_is_looping() { return _is_looping; }
+      bool get_is_recording() { return _is_recording;} 
+      bool get_looper_transport_control_link() { return _looper_transport_control_link;}
       void set_is_playing(bool is_playing) { _is_playing = is_playing; }
-
+      void start_stop_looper();
+      void start_looper();
+      void stop_looper();
+      void clear_looper();
+      void run_looper();
 };
 
 #endif

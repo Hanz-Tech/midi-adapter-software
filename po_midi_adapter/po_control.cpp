@@ -12,45 +12,30 @@ void printArray( uint8_t a[][ 2 ] ) {
 } 
 
 PO_Control::PO_Control(){
-    _config = new SD_Load();
-    _po_midi_channel = _config->get_po_midi_channel();
-    _disable_transport = _config->get_disable_transport(); //1 == disable transport, 0 == enabled transport
-    _po_cc_control = _config->get_po_cc_control(); //0 == disable , 1 ==enable
-    _volca_fm_velocity = _config->get_volca_fm_velocity(); // 1 == enable, 0 == disable
-    _volca_fm_midi_ch_1 = _config->get_volca_fm_midi_ch_1();
-    _volca_fm_midi_ch_2 = _config->get_volca_fm_midi_ch_2();
-    _sync_out_enabled = _config->get_sync_out_enabled();
-    _midi_ppqn = _config->get_midi_ppqn();
-    _config->get_note_map(_note_map);
-    _config->get_transport_note_map(_transport_note_map);
-    _config->get_midi_cc_knob(_midi_cc_knob);
-    _config->get_record_note_map(_record_note_map);
+  _config = new SD_Load();
+  _po_midi_channel = _config->get_po_midi_channel();
+  _disable_transport = _config->get_disable_transport(); //1 == disable transport, 0 == enabled transport
+  _po_cc_control = _config->get_po_cc_control(); //0 == disable , 1 ==enable
+  _volca_fm_velocity = _config->get_volca_fm_velocity(); // 1 == enable, 0 == disable
+  _volca_fm_midi_ch_1 = _config->get_volca_fm_midi_ch_1();
+  _volca_fm_midi_ch_2 = _config->get_volca_fm_midi_ch_2();
+  _sync_out_enabled = _config->get_sync_out_enabled();
+  _midi_ppqn = _config->get_midi_ppqn();
+  _config->get_note_map(_note_map);
+  _config->get_transport_note_map(_transport_note_map);
+  _config->get_midi_cc_knob(_midi_cc_knob);
+  _config->get_record_note_map(_record_note_map);
+  _config->get_looper_control(_looper_control);
+  _looper_transport_control_link = _config->get_looper_transport_control_link();
 }
 
+// -------------- Trigger Notes -------------
 void PO_Control::releasePONoteButton(uint8_t note){
   for (uint8_t i = 0 ; i < LEN(_note_map) ; i++){
     if(_note_map[i][0] == note){
       digitalWrite(_note_map[i][1], HIGH);
     }
   }
-}
-
-void PO_Control::triggerPONoteRecord(uint8_t note){
-    for (uint8_t i = 0 ; i < LEN(_record_note_map) ; i++){
-        if (_record_note_map[i][0] == note){
-            digitalWrite(PO_BUTTON_SPECIAL, LOW);
-            delay(50);
-            digitalWrite(_record_note_map[i][1], LOW);
-            delay(50);
-            digitalWrite(_record_note_map[i][1], HIGH);
-            _is_recording = true;
-        }
-    }
-}
-
-void PO_Control::releasePONoteRecord(){
-    digitalWrite(PO_BUTTON_SPECIAL, HIGH);
-    _is_recording = false;
 }
 
 void PO_Control::triggerPONoteButton(uint8_t note){
@@ -64,6 +49,103 @@ void PO_Control::triggerPONoteButton(uint8_t note){
   }
 }
 
+// --------------- Trigger Record ---------------
+void PO_Control::triggerPONoteRecord(uint8_t note){
+  for (uint8_t i = 0 ; i < LEN(_record_note_map) ; i++){
+    if (_record_note_map[i][0] == note){
+      digitalWrite(PO_BUTTON_SPECIAL, LOW);
+      delay(40);
+      digitalWrite(_record_note_map[i][1], LOW);
+      _loop_start_time = millis();
+      delay(50);
+      digitalWrite(_record_note_map[i][1], HIGH);
+      _is_looping = false;
+      _is_recording = true;
+      if (i < 8){
+        _current_loop_track = i;
+      }
+    }
+  }
+}
+
+void PO_Control::releasePONoteRecord(){
+  digitalWrite(PO_BUTTON_SPECIAL, HIGH);
+  if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){ //don't use looper on drum track
+    _loop_interval_time = millis() - _loop_start_time;
+    if(_config->get_is_looper_autoplay()){
+      digitalWrite(_note_map[4][1], LOW);
+      _previous_loop_time = millis();
+      digitalWrite(13,HIGH);
+      delay(25);
+      digitalWrite(_note_map[4][1], HIGH);
+      digitalWrite(13,LOW);
+      _is_looping = true;
+    }
+  }
+  _is_recording = false;
+  _loop_start_time = 0;
+}
+
+
+// --------------- Looper Control ---------------
+void PO_Control::clear_looper(){
+  if(_current_loop_track > -1 ){
+    _is_looping = false;
+    _previous_loop_time = 0;
+    _current_loop_track = -1;
+    _loop_interval_time = 0;
+    _loop_start_time = 0;
+    digitalWrite(PO_BUTTON_SOUND, LOW);
+    delay(30);
+    digitalWrite(_record_note_map[_current_loop_track][1], LOW);
+    delay(30);
+    digitalWrite(_record_note_map[_current_loop_track][1], HIGH);
+    delay(30);
+    digitalWrite(PO_BUTTON_SOUND, HIGH);
+    delay(30);
+    digitalWrite(PO_BUTTON_SPECIAL, LOW);
+    delay(30);
+    digitalWrite(PO_BUTTON_SOUND, LOW);
+    delay(30);
+    digitalWrite(PO_BUTTON_SOUND, HIGH);
+    delay(30);
+    digitalWrite(PO_BUTTON_SPECIAL, HIGH);
+  }
+}
+
+void PO_Control::start_stop_looper(){
+  if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){
+    if(_is_looping){
+      _is_looping = false;
+      _previous_loop_time = 0;
+    } else {
+      _is_looping = true;
+    }
+  }
+}
+
+void PO_Control::start_looper(){
+  if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){
+    _is_looping = true;
+  }
+}
+
+void PO_Control::stop_looper(){
+  if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){
+      _is_looping = false;
+      _previous_loop_time = 0;
+  }
+}
+
+void PO_Control::checkForLooperControl(uint8_t data1){
+  if (data1 == _looper_control[0]){
+    start_stop_looper();
+  } else if (data1 == _looper_control[1]){
+    clear_looper();
+  }
+}
+
+// --------------- Midi CC for PO Control
 void PO_Control::triggerPOControlNoteButton(uint8_t note){
   if(_op_mode == NORMAL_MODE){
     //Serial.println("normal mode");
@@ -101,6 +183,7 @@ void PO_Control::releasePOControlNoteButton(uint8_t note){
   }
 }
 
+// ----------------Sub functions ------------
 void PO_Control::changeVolume(uint8_t vol){
   digitalWrite(PO_BUTTON_BPM, LOW);
   delay(KNOB_DELAY);
@@ -138,6 +221,18 @@ void PO_Control::startOrStopPlayback(){
       delay(20);
       digitalWrite(_transport_note_map[i][1], HIGH);
     }
+  }
+}
+
+void PO_Control::run_looper(){
+  // Serial.println(millis() - _previous_loop_time);
+  if(millis() - _previous_loop_time >= _loop_interval_time){
+    _previous_loop_time = millis();
+    digitalWrite(_note_map[4][1], LOW);
+    digitalWrite(13,HIGH);
+    delay(25);
+    digitalWrite(_note_map[4][1], HIGH);
+    digitalWrite(13,LOW);
   }
 }
 
@@ -202,6 +297,7 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
           this->triggerPOControlNoteButton(data1);
       } else{
         if (!_is_recording){
+          this->checkForLooperControl(data1);
           this->triggerPONoteRecord(data1);
           if(!_is_recording){
             this->triggerPONoteButton(data1);
