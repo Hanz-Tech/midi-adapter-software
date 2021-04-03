@@ -26,7 +26,10 @@ class PO_Control{
       unsigned long _loop_start_time = 0;
       unsigned long _loop_stop_time = 0;
       unsigned long _loop_interval_time = 0;
+      elapsedMillis _looper_trigger_millis;
       int _current_loop_track = -1;
+      bool _is_loop_triggered = false;
+      int _current_record_track = -1;
       int _looper_transport_control_link = 0;
       unsigned long _current_loop_time = 0;
       unsigned long _previous_loop_time = 0;
@@ -34,7 +37,7 @@ class PO_Control{
       int _midi_ppqn = 24;
       unsigned long _prev_midi_clock_time = 0;
       volatile unsigned long _curr_midi_clock_time = 0;
-  
+      
 
       SD_Load *_config;
 
