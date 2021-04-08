@@ -54,7 +54,7 @@ void PO_Control::triggerPONoteRecord(uint8_t note){
   for (uint8_t i = 0 ; i < LEN(_record_note_map) ; i++){
     if (_record_note_map[i][0] == note){
       digitalWriteFast(PO_BUTTON_SPECIAL, LOW);
-      delay(8);
+      delay(15);
       digitalWriteFast(_record_note_map[i][1], LOW);
       _loop_start_time = millis();
       _is_looping = false;
@@ -73,7 +73,7 @@ void PO_Control::releasePONoteRecord(){
   digitalWriteFast(PO_BUTTON_SPECIAL, HIGH);
   if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){ //don't use looper on drum track
     if(_config->get_is_looper_autoplay()){
-      delay(70);
+      delay(60);
       this->run_looper();
       _is_looping = true;
     }
@@ -85,7 +85,7 @@ void PO_Control::releasePONoteRecord(){
 
 // --------------- Looper Control ---------------
 void PO_Control::clear_looper(){
-  if(_current_loop_track > -1 ){
+  if(_current_loop_track > -1){
     _is_looping = false;
     _previous_loop_time = 0;
     _current_loop_track = -1;
@@ -93,19 +93,19 @@ void PO_Control::clear_looper(){
     _loop_interval_time = 0;
     _loop_start_time = 0;
     digitalWriteFast(PO_BUTTON_SOUND, LOW);
-    delay(5);
+    delay(30);
     digitalWriteFast(_record_note_map[_current_loop_track][1], LOW);
-    delay(5);
+    delay(30);
     digitalWriteFast(_record_note_map[_current_loop_track][1], HIGH);
-    delay(5);
+    delay(30);
     digitalWriteFast(PO_BUTTON_SOUND, HIGH);
-    delay(5);
+    delay(30);
     digitalWriteFast(PO_BUTTON_SPECIAL, LOW);
-    delay(5);
+    delay(30);
     digitalWriteFast(PO_BUTTON_SOUND, LOW);
-    delay(5);
+    delay(30);
     digitalWriteFast(PO_BUTTON_SOUND, HIGH);
-    delay(5);
+    delay(30);
     digitalWriteFast(PO_BUTTON_SPECIAL, HIGH);
   }
 }
@@ -150,10 +150,11 @@ void PO_Control::run_looper(){
     _is_loop_triggered = false;
     _looper_trigger_millis = 0;
     digitalWriteFast(_note_map[4][1], LOW);
-    // digitalWriteFast(13,HIGH);
   } else if (_looper_trigger_millis >= 15 && !_is_loop_triggered){
     digitalWriteFast(_note_map[4][1], HIGH);
-    // digitalWriteFast(13,LOW);
+    digitalWriteFast(13, HIGH);
+    delay(2);
+    digitalWriteFast(13, LOW);
     _is_loop_triggered = true;
   }
 }
