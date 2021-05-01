@@ -251,7 +251,6 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
           this->triggerPONoteRecord(data1);
           if(!_is_recording){
             this->triggerPONoteButton(data1);
-            Serial.println("play");
           }
         } else {
           this->releasePONoteRecord();

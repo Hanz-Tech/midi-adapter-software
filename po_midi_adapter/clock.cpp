@@ -11,12 +11,10 @@ Clock::Clock(uint8_t pin_sync_out){
 }
 
 void Clock::stop(){
-  Serial.println("stop lcock");
   _isStarted = false;
 }
 
 void Clock::start(){
-  Serial.println("start lcock");
   _isStarted = true;
 }
 

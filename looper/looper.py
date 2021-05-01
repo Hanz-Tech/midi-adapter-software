@@ -30,7 +30,7 @@ def record(po_button,message):
         msg = mido.Message('note_on', note=midi_note_po_record)
         msg2 = mido.Message('note_on', note=po_button)
         out_port.send(msg)
-        time.sleep(0.1)
+        time.sleep(0.05)
         out_port.send(msg2)
     else:
         print('stop record')
@@ -56,10 +56,10 @@ def change_sound():
         current_sound = 1    
     print(current_sound)
     out_port.send(msg_on_1)
-    time.sleep(0.1)
+    time.sleep(0.05)
     out_port.send(msg_on_2)
     out_port.send(msg_off_1)
-    time.sleep(0.1)
+    time.sleep(0.05)
     out_port.send(msg_off_2)
 
 
@@ -81,7 +81,7 @@ def process_MIDI_message(message):
                 msg_on = mido.Message('note_on', note=midi_note_po_play)
                 msg_off = mido.Message('note_off', note=midi_note_po_play)
                 out_port.send(msg_on)
-                time.sleep(0.1)
+                time.sleep(0.05)
                 out_port.send(msg_off)
         elif message['control'] == midi_cc_change_sound:
             change_sound()

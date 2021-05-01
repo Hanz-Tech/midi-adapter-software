@@ -6,7 +6,7 @@
 #include "po_control.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
-#define FIRMWARE_VERSION "2.3.1-beta"
+#define FIRMWARE_VERSION "2.3.2-beta"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
@@ -287,7 +287,7 @@ void processMidiClock(){
   curr_midi_clock_time = micros();
   delta = 60000 / ( ( (float) ((curr_midi_clock_time - prev_midi_clock_time) / float(1000) )) * po_control->get_midi_ppqn());
   clk->setBPM((int)(floor)(delta));
-  Serial.println((int)(floor)(delta));
+  // Serial.println((int)(floor)(delta));
   prev_midi_clock_time = curr_midi_clock_time;
 }
 
@@ -304,14 +304,14 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     if(isSendToUSBHost){
       sendToUSBHost(mtype, data1, data2, channel);
     }
-    if(type == 0xFA && !po_control->get_disable_transport()){
+    if((type == 0xFA || type == 0xFB) && !po_control->get_disable_transport()){
       if(!po_control->get_is_playing()){
         po_control->startOrStopPlayback();
         clk->start();
         if (po_control->get_looper_transport_control_link()){
           po_control->start_looper();
         }
-        po_control->set_is_playing(!po_control->get_is_playing());
+        po_control->set_is_playing(true);
       }
     } else if(type == 0xFC && !po_control->get_disable_transport()){
       if(po_control->get_is_playing()){
@@ -320,7 +320,7 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
         if (po_control->get_looper_transport_control_link()){
           po_control->stop_looper();
         }
-        po_control->set_is_playing(!po_control->get_is_playing());
+        po_control->set_is_playing(false);
       }
     }
   } else {
