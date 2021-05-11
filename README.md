@@ -10,7 +10,7 @@ Buy it Here
 
 # Disclaimer
 
-Copyright 2019 PO-MA
+Copyright 2021 Hanz Tech Inc
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -44,4 +44,5 @@ The code will only work on a **Teensy 4.1**
 ### 4. Volca FM velocity control
 1. Transpose note velocity in to MIDI CC
 
-**Please refer to the [wiki](https://github.com/PO-MIDI-Adapter/midi-adapter-software/wiki) for user instructions**
+**Please refer to the [wiki](https://github.com/PO-MIDI-Adapter/midi-adapter-software/wiki) for build and user instructions**
+
