@@ -69,6 +69,7 @@ void PO_Control::triggerPONoteRecord(uint8_t note){
 
 void PO_Control::releasePONoteRecord(){
   _loop_interval_time = millis() - _loop_start_time;
+  Serial.println(_loop_interval_time);
   digitalWriteFast(_record_note_map[_current_record_track][1], HIGH);
   digitalWriteFast(PO_BUTTON_SPECIAL, HIGH);
   if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){ //don't use looper on drum track

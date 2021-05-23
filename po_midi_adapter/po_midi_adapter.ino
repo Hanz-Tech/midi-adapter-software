@@ -6,7 +6,7 @@
 #include "po_control.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
-#define FIRMWARE_VERSION "2.3.2-beta"
+#define FIRMWARE_VERSION "2.3.3-beta"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
@@ -35,11 +35,13 @@ bool activity = false;
 midi::MidiType mtype;
 Clock *clk;
 PO_Control *po_control;
+int midi_ppqn = 0;
 
 unsigned long prev_midi_clock_time = 0;
 volatile unsigned long curr_midi_clock_time = 0;
 
-float delta = 0;
+int delta = 0;
+int bpm_counter = 0;
 void sendToUSBHost(byte type, byte data1, byte data2, byte channel);
 void sendToComputer(byte type, byte data1, byte data2, byte channel, const uint8_t *sysexarray, byte cable);
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost);
@@ -108,6 +110,7 @@ void setup() {
   delay(1500);
 
   po_control = new PO_Control();
+  midi_ppqn = po_control->get_midi_ppqn();
   delay(10);
   myusb.begin();
   if(po_control->get_sync_out_enabled()){
@@ -130,7 +133,7 @@ void loop() {
     clk->sendBPM(millis());
   }
   // Next read messages arriving from the (up to) 10 USB devices plugged into the USB Host port
-  for (int port=0; port < 4; port++) {
+  for (int port=0; port < 1; port++) {
     if (midilist[port]->read()) {
       uint8_t type =       midilist[port]->getType();
       uint8_t data1 =      midilist[port]->getData1();
@@ -207,7 +210,6 @@ void loop() {
       if (type == 0xF8){ // midi clock
         processMidiClock();
         mtype = (midi::MidiType)type;
-        MIDI1.send(mtype, data1, data2, channel);
         MIDI2.send(mtype, data1, data2, channel);
         sendToComputer(mtype, data1, data2, channel, sys, 0);
         sendToUSBHost(mtype, data1, data2, channel);
@@ -241,7 +243,6 @@ void loop() {
         processMidiClock();
         mtype = (midi::MidiType)type;
         MIDI1.send(mtype, data1, data2, channel);
-        MIDI2.send(mtype, data1, data2, channel);
         sendToComputer(mtype, data1, data2, channel, sys, 0);
         sendToUSBHost(mtype, data1, data2, channel);
       }
@@ -284,11 +285,17 @@ void sendToComputer(byte type, byte data1, byte data2, byte channel, const uint8
 }
 
 void processMidiClock(){
-  curr_midi_clock_time = micros();
-  delta = 60000 / ( ( (float) ((curr_midi_clock_time - prev_midi_clock_time) / float(1000) )) * po_control->get_midi_ppqn());
-  clk->setBPM((int)(floor)(delta));
-  // Serial.println((int)(floor)(delta));
-  prev_midi_clock_time = curr_midi_clock_time;
+  if(bpm_counter == 0){
+    curr_midi_clock_time = micros();
+  }
+  if(bpm_counter == midi_ppqn){
+    prev_midi_clock_time = curr_midi_clock_time;
+    curr_midi_clock_time = micros();
+    bpm_counter = 0;
+    int bpm = 60000 / (( curr_midi_clock_time - prev_midi_clock_time ) / 1000);
+    clk->setBPM(bpm);
+  }
+  bpm_counter++;
 }
 
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost){
@@ -317,6 +324,9 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
       if(po_control->get_is_playing()){
         po_control->startOrStopPlayback();
         clk->stop();
+        bpm_counter = 0;
+        curr_midi_clock_time = 0;
+        prev_midi_clock_time = 0;
         if (po_control->get_looper_transport_control_link()){
           po_control->stop_looper();
         }
