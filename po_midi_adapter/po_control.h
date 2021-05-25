@@ -51,14 +51,14 @@ class PO_Control{
       void releasePOControlNoteButton(uint8_t note);
 
       void triggerPONoteRecord(uint8_t note);
-      void releasePONoteRecord();
+      void releasePONoteRecord(int bpm);
 
       void checkForLooperControl(uint8_t data1);
     public:
       PO_Control();
 
       void startOrStopPlayback();
-      void execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2);
+      void execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2, int bpm);
 
       int get_po_midi_channel(){ return _po_midi_channel; }
       int get_disable_transport(){ return _disable_transport; }

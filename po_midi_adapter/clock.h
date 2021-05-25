@@ -13,6 +13,7 @@ class Clock{
         void stop();
         void start();
         bool getStatus();
+        int getBpm(){return _bpm;}
 
     private:
         int _pin_sync_out = 0;

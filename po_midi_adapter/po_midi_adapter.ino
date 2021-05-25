@@ -300,7 +300,7 @@ void processMidiClock(){
 
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost){
   // printMIDI(type, data1, data2, channel );
-  po_control->execute(type, channel, data1, data2);
+  po_control->execute(type, channel, data1, data2, clk->getBpm());
   mtype = (midi::MidiType)type;
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
     MIDI1.send(mtype, data1, data2, channel);

@@ -67,9 +67,10 @@ void PO_Control::triggerPONoteRecord(uint8_t note){
   }
 }
 
-void PO_Control::releasePONoteRecord(){
-  _loop_interval_time = millis() - _loop_start_time;
-  Serial.println(_loop_interval_time);
+void PO_Control::releasePONoteRecord(int bpm){
+  float ms_per_beat = 60000 / float(bpm);
+  int number_of_beats = ( millis() - _loop_start_time ) / ms_per_beat;
+  _loop_interval_time = number_of_beats * ms_per_beat;
   digitalWriteFast(_record_note_map[_current_record_track][1], HIGH);
   digitalWriteFast(PO_BUTTON_SPECIAL, HIGH);
   if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){ //don't use looper on drum track
@@ -240,7 +241,7 @@ void PO_Control::startOrStopPlayback(){
   }
 }
 
-void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2){
+void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2, int bpm){
   if(channel == this->get_po_midi_channel()){
     if (type ==  midi::NoteOn){
       if(_op_mode > PERF_MODE){
@@ -254,7 +255,7 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
             this->triggerPONoteButton(data1);
           }
         } else {
-          this->releasePONoteRecord();
+          this->releasePONoteRecord(bpm);
         }
       }
     } else if(type == midi::NoteOff){
