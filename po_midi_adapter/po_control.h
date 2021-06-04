@@ -31,6 +31,7 @@ class PO_Control{
       bool _is_loop_triggered = false;
       int _current_record_track = -1;
       int _looper_transport_control_link = 0;
+      int _is_looper_quantized = 0;
       unsigned long _current_loop_time = 0;
       unsigned long _previous_loop_time = 0;
       int _sync_out_enabled = 1;

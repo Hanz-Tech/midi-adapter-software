@@ -100,6 +100,9 @@ bool SD_Load::loadSDConfig(){
     else if (cfg.nameIs("looper_transport_control_link")){
       _looper_transport_control_link = cfg.getIntValue();
     }
+    else if (cfg.nameIs("looper_quantized")){
+      _looper_quantized = cfg.getIntValue();
+    } 
   }
   cfg.end();
   return true;

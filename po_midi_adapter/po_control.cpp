@@ -27,6 +27,7 @@ PO_Control::PO_Control(){
   _config->get_record_note_map(_record_note_map);
   _config->get_looper_control(_looper_control);
   _looper_transport_control_link = _config->get_looper_transport_control_link();
+  _is_looper_quantized = _config->get_is_looper_quantized();
 }
 
 // -------------- Trigger Notes -------------
@@ -68,9 +69,13 @@ void PO_Control::triggerPONoteRecord(uint8_t note){
 }
 
 void PO_Control::releasePONoteRecord(int bpm){
-  float ms_per_beat = 60000 / float(bpm);
-  int number_of_beats = ( millis() - _loop_start_time ) / ms_per_beat;
-  _loop_interval_time = number_of_beats * ms_per_beat;
+  if(_is_looper_quantized){
+    float ms_per_beat = 60000 / float(bpm);
+    int number_of_beats = ( millis() - _loop_start_time ) / ms_per_beat;
+    _loop_interval_time = number_of_beats * ms_per_beat;
+  } else {
+    _loop_interval_time = millis() - _loop_start_time;
+  }
   digitalWriteFast(_record_note_map[_current_record_track][1], HIGH);
   digitalWriteFast(PO_BUTTON_SPECIAL, HIGH);
   if(_current_loop_track >= 0 && _current_loop_track < 8 && _config->get_is_looper_enabled()){ //don't use looper on drum track

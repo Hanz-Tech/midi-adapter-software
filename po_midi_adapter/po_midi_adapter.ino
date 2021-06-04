@@ -6,7 +6,7 @@
 #include "po_control.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
-#define FIRMWARE_VERSION "2.3.3-beta"
+#define FIRMWARE_VERSION "2.3.4-beta"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
