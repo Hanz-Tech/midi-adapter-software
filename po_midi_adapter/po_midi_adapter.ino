@@ -220,7 +220,6 @@ void loop() {
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
-      MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
       MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
     }
     activity = true;
@@ -234,7 +233,6 @@ void loop() {
     byte data2 = MIDI2.getData2();
     const uint8_t *sys = MIDI2.getSysExArray();
     //byte cable = usbMIDI.getCable();
-
     // forward this message to the Serial MIDI OUT ports
     if (type != usbMIDI.SystemExclusive) {
       // Normal messages, first we must convert usbMIDI's type (an ordinary
@@ -253,7 +251,6 @@ void loop() {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
-      MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
     }
     activity = true;
   }
