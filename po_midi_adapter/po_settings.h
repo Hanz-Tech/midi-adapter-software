@@ -2,31 +2,29 @@
 #define PO_SETTINGS_H
 
 //Teensy GPIO mapping to PO button
-#define PO_BUTTON_1 5
-#define PO_BUTTON_2 6
-#define PO_BUTTON_3 18
-#define PO_BUTTON_4 19
-#define PO_BUTTON_5 10
-#define PO_BUTTON_6 11
-#define PO_BUTTON_7 14
-#define PO_BUTTON_8 15
-#define PO_BUTTON_9 25
-#define PO_BUTTON_10 12
-#define PO_BUTTON_11 39
-#define PO_BUTTON_12 38
-#define PO_BUTTON_13 30
-#define PO_BUTTON_14 32
-#define PO_BUTTON_15 34
-#define PO_BUTTON_16 33
-#define PO_BUTTON_SOUND 2
-#define PO_BUTTON_PATTERN 0
-#define PO_BUTTON_WRITE 35
-#define PO_BUTTON_PLAY 36
-#define PO_BUTTON_FX 16
-#define PO_BUTTON_BPM 23
-#define PO_BUTTON_SPECIAL 17
-#define PO_POT_A 22
-#define PO_POT_B 21
+#define PO_BUTTON_1 16
+#define PO_BUTTON_2 17
+#define PO_BUTTON_3 27
+#define PO_BUTTON_4 30
+#define PO_BUTTON_5 18
+#define PO_BUTTON_6 19
+#define PO_BUTTON_7 24
+#define PO_BUTTON_8 25
+#define PO_BUTTON_9 22
+#define PO_BUTTON_10 21
+#define PO_BUTTON_11 20
+#define PO_BUTTON_12 11
+#define PO_BUTTON_13 23
+#define PO_BUTTON_14 5
+#define PO_BUTTON_15 6
+#define PO_BUTTON_16 10
+#define PO_BUTTON_SOUND 39
+#define PO_BUTTON_PATTERN 40
+#define PO_BUTTON_WRITE 9
+#define PO_BUTTON_PLAY 12
+#define PO_BUTTON_FX 26
+#define PO_BUTTON_BPM 41
+#define PO_BUTTON_SPECIAL 31
 #define CLOCKSYNCPIN 37
 
 //Midi channel and other options

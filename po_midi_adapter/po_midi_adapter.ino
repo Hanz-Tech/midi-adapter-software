@@ -6,11 +6,11 @@
 #include "po_control.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
-#define FIRMWARE_VERSION "2.3.5"
+#define FIRMWARE_VERSION "3.0.0"
 
 // Create the Serial MIDI portsm
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial7, MIDI2);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI1);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI2);
 
 // Create the ports for USB devices plugged into Teensy's 2nd USB port (via hubs)
 USBHost myusb;
