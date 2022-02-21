@@ -49,6 +49,7 @@ void processMidiClock();
 void printMIDI(byte type, byte data1, byte data2, byte channel);
 
 void setup() {
+  Serial.begin(115200);
   MIDI1.begin(MIDI_CHANNEL_OMNI);
   MIDI2.begin(MIDI_CHANNEL_OMNI);
   pinMode(PO_BUTTON_1, OUTPUT);
@@ -78,7 +79,7 @@ void setup() {
 
   pinMode(13, OUTPUT); // LED pin
   digitalWrite(13, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(13, LOW);
 
   digitalWrite(PO_BUTTON_1, HIGH);
@@ -104,6 +105,7 @@ void setup() {
   digitalWrite(PO_BUTTON_WRITE, HIGH);
   digitalWrite(PO_BUTTON_BPM, HIGH);
   digitalWrite(PO_BUTTON_SPECIAL, HIGH);
+  Serial.print("Teensy booted");
   // Wait 1.5 seconds before turning on USB Host.  If connected USB devices
   // use too much power, Teensy at least completes USB enumeration, which
   // makes isolating the power issue easier.
@@ -118,7 +120,7 @@ void setup() {
     clk = new Clock(CLOCKSYNCPIN);
   }
 
-  Serial.begin(115200);
+  
   Serial.println("PO-MA");
   Serial.println("Firmware Version");
   Serial.println(FIRMWARE_VERSION);
