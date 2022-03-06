@@ -1,3 +1,32 @@
+/*!
+ *  @file       po_control.cpp
+ *  Project     Pocket Operator MIDI Adapter
+ *  @brief      Pocket Operator MIDI Adapter
+ *  @author     Hanz Tech Inc
+ *  @date       2022/03/06
+ *  @license    MIT - Copyright (c) 2022 Hanz Tech Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+
+
 #include "po_control.h"
 
 void printArray( uint8_t a[][ 2 ] ) {
@@ -28,6 +57,17 @@ PO_Control::PO_Control(){
   _config->get_looper_control(_looper_control);
   _looper_transport_control_link = _config->get_looper_transport_control_link();
   _is_looper_quantized = _config->get_is_looper_quantized();
+  _esp32_enabled = _config->get_is_esp32_enabled();
+}
+
+
+//-------------- Power ESP32(BLE MIDI) -------------
+void PO_Control::powerOnEsp32(){
+  if (_esp32_enabled == 1) {
+    digitalWrite(ESP32_ENABLE, HIGH);
+  } else {
+    digitalWrite(ESP32_ENABLE, LOW);
+  }
 }
 
 // -------------- Trigger Notes -------------

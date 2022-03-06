@@ -1,3 +1,31 @@
+/*!
+ *  @file       po_control.ino
+ *  Project     Pocket Operator MIDI Adapter
+ *  @brief      Pocket Operator MIDI Adapter
+ *  @author     Hanz Tech Inc
+ *  @date       2022/03/06
+ *  @license    MIT - Copyright (c) 2022 Hanz Tech Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+
 #ifndef PO_CONTROL_H
 #define PO_CONTROL_H
 #include <Arduino.h>
@@ -38,10 +66,13 @@ class PO_Control{
       int _midi_ppqn = 24;
       unsigned long _prev_midi_clock_time = 0;
       volatile unsigned long _curr_midi_clock_time = 0;
+      int _esp32_enabled = 1;
       
 
       SD_Load *_config;
 
+      
+      
       void changeSound(uint8_t sound);
       void changeVolume(uint8_t vol);
       void changePattern(uint8_t pattern);
@@ -57,10 +88,10 @@ class PO_Control{
       void checkForLooperControl(uint8_t data1);
     public:
       PO_Control();
-
+      void powerOnEsp32();
       void startOrStopPlayback();
       void execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t data2, int bpm);
-
+  
       int get_po_midi_channel(){ return _po_midi_channel; }
       int get_disable_transport(){ return _disable_transport; }
       int get_po_cc_control(){ return _po_cc_control; }
@@ -79,6 +110,7 @@ class PO_Control{
       void stop_looper();
       void clear_looper();
       void run_looper();
+      
 };
 
 #endif

@@ -1,3 +1,32 @@
+/*!
+ *  @file       po_midi_adapter.ino
+ *  Project     Pocket Operator MIDI Adapter
+ *  @brief      Pocket Operator MIDI Adapter
+ *  @author     Hanz Tech Inc
+ *  @date       2022/03/06
+ *  @license    MIT - Copyright (c) 2022 Hanz Tech Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+
+
 #include <MIDI.h>        // access to serial (5 pin DIN) MIDI
 #include <USBHost_t36.h> // access to USB MIDI devices (plugged into 2nd USB port)
 #include "po_settings.h"
@@ -6,7 +35,7 @@
 #include "po_control.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
 
-#define FIRMWARE_VERSION "3.0.0"
+#define FIRMWARE_VERSION "3.3.0"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI1);
@@ -75,6 +104,7 @@ void setup() {
   pinMode(PO_BUTTON_WRITE,OUTPUT);
   pinMode(PO_BUTTON_BPM,OUTPUT);
   pinMode(PO_BUTTON_SPECIAL,OUTPUT);
+  pinMode(ESP32_ENABLE,OUTPUT);
   
 
   pinMode(13, OUTPUT); // LED pin
@@ -82,6 +112,7 @@ void setup() {
   delay(200);
   digitalWrite(13, LOW);
 
+  digitalWrite(ESP32_ENABLE, LOW);
   digitalWrite(PO_BUTTON_1, HIGH);
   digitalWrite(PO_BUTTON_2, HIGH);
   digitalWrite(PO_BUTTON_3, HIGH);
@@ -111,7 +142,7 @@ void setup() {
   // makes isolating the power issue easier.
   delay(1500);
 
-  po_control = new PO_Control();
+  
   midi_ppqn = po_control->get_midi_ppqn();
   delay(10);
   myusb.begin();
@@ -120,10 +151,12 @@ void setup() {
     clk = new Clock(CLOCKSYNCPIN);
   }
 
-  
+  po_control = new PO_Control();
   Serial.println("PO-MA");
   Serial.println("Firmware Version");
   Serial.println(FIRMWARE_VERSION);
+
+  po_control->powerOnEsp32();
 }
 
 void loop() {

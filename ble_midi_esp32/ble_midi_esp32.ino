@@ -7,7 +7,7 @@ HardwareSerialMIDI_Interface MIDI_SERIAL = Serial;
 
 #define FIRMWARE_VERSION "2.3.5"
 
-MIDI_PipeFactory<2> pipes;
+BidirectionalMIDI_Pipe mpipe;
 
 void setup() {
   Serial.begin(115200);
@@ -15,14 +15,10 @@ void setup() {
   Serial.println("Firmware Version");
   Serial.println(FIRMWARE_VERSION);
   
-  MIDI_BLE >> pipes >> MIDI_SERIAL; // all incoming midi from BLE is sent to Serial
-  MIDI_BLE << pipes << MIDI_SERIAL; // all incoming midi from Serial is sent to BLE
-
-  MIDI_SERIAL.begin();
-  MIDI_BLE.begin();
+  MIDI_BLE | mpipe | MIDI_SERIAL; // all incoming midi from BLE is sent to Serial
+  MIDI_Interface::beginAll();
 }
 
 void loop() {
-  MIDI_BLE.update();
-  MIDI_SERIAL.update();
+  MIDI_Interface::updateAll();
 }
