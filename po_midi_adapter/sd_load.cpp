@@ -131,7 +131,7 @@ bool SD_Load::loadSDConfig(){
     else if (cfg.nameIs("looper_quantized")){
       _looper_quantized = cfg.getIntValue();
     } 
-    else if (cfg.nameIs("esp32_enabled")) {
+    else if (cfg.nameIs("ble_midi_enabled")) {
       _esp32_enabled = cfg.getIntValue();
     }
   }

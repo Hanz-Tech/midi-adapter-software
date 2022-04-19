@@ -38,7 +38,7 @@
 #define FIRMWARE_VERSION "3.3.0"
 
 // Create the Serial MIDI portsm
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI1);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI1);
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI2);
 
 // Create the ports for USB devices plugged into Teensy's 2nd USB port (via hubs)
