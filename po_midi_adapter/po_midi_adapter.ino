@@ -37,6 +37,9 @@
 
 #define FIRMWARE_VERSION "3.3.0"
 
+#define LED_PIN 13
+#define LED_ON_MS 15
+
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI1);
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI2);
@@ -80,7 +83,6 @@ void printMIDI(byte type, byte data1, byte data2, byte channel);
 void setup() {
   Serial.begin(115200);
   MIDI1.begin(MIDI_CHANNEL_OMNI);
-  MIDI2.begin(MIDI_CHANNEL_OMNI);
   pinMode(PO_BUTTON_1, OUTPUT);
   pinMode(PO_BUTTON_2, OUTPUT);
   pinMode(PO_BUTTON_3, OUTPUT);
@@ -136,7 +138,6 @@ void setup() {
   digitalWrite(PO_BUTTON_WRITE, HIGH);
   digitalWrite(PO_BUTTON_BPM, HIGH);
   digitalWrite(PO_BUTTON_SPECIAL, HIGH);
-  Serial.print("Teensy booted");
   // Wait 1.5 seconds before turning on USB Host.  If connected USB devices
   // use too much power, Teensy at least completes USB enumeration, which
   // makes isolating the power issue easier.
@@ -152,11 +153,13 @@ void setup() {
   }
 
   po_control = new PO_Control();
-  Serial.println("PO-MA");
+  Serial.println("Pocket Operator MIDI Adapter");
   Serial.println("Firmware Version");
   Serial.println(FIRMWARE_VERSION);
 
   po_control->powerOnEsp32();
+  delay(3000); //wait for esp32 to boot
+  MIDI2.begin(MIDI_CHANNEL_OMNI); //start midi 2 after esp32 sends its boot message via serial
 }
 
 void loop() {
@@ -175,7 +178,6 @@ void loop() {
       uint8_t data2 =      midilist[port]->getData2();
       uint8_t channel =    midilist[port]->getChannel();
       const uint8_t *sys = midilist[port]->getSysExArray();
-      activity = true;
       if (type == 0xF8){ // midi clock
         processMidiClock();
         mtype = (midi::MidiType)type;
@@ -185,6 +187,7 @@ void loop() {
       }
       else{
         processMidi(type, channel, data1, data2,sys,true,false);
+        activity = true;
       }
     }
   }
@@ -211,22 +214,23 @@ void loop() {
       }
       else{
         processMidi(type, channel, data1, data2,sys,false,true);
+        activity = true;
       }
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
       MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
+      activity = true;
     }
-    activity = true;
   }
   // blink the LED when any activity has happened
   if (activity) {
-    digitalWriteFast(13, HIGH); // LED on
+    digitalWriteFast(LED_PIN, HIGH); // LED on
     ledOnMillis = 0;
   }
-  if (ledOnMillis > 15) {
-    digitalWriteFast(13, LOW);  // LED off
+  if (ledOnMillis > LED_ON_MS) {
+    digitalWriteFast(LED_PIN, LOW);  // LED off
   }
 
   if (MIDI1.read()) {
@@ -251,13 +255,14 @@ void loop() {
       }
       else{
         processMidi(type, channel, data1, data2,sys,true,true);
+        activity = true;
       }
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI2.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
+      activity = true;
     }
-    activity = true;
   }
 
   if (MIDI2.read()) {
@@ -273,6 +278,7 @@ void loop() {
       // Normal messages, first we must convert usbMIDI's type (an ordinary
       // byte) to the MIDI library's special MidiType.
       if (type == 0xF8){ // midi clock
+//        Serial.println("midi clk");
         processMidiClock();
         mtype = (midi::MidiType)type;
         MIDI1.send(mtype, data1, data2, channel);
@@ -281,13 +287,14 @@ void loop() {
       }
       else{
         processMidi(type, channel, data1, data2,sys,true,true);
+        activity = true;
       }
     } else {
       // SysEx messages are special.  The message length is given in data1 & data2
       unsigned int SysExLength = data1 + data2 * 256;
       MIDI1.sendSysEx(SysExLength, usbMIDI.getSysExArray(), true);
+      activity = true;
     }
-    activity = true;
   }
 
   // blink the LED when any activity has happened
@@ -331,7 +338,6 @@ void processMidiClock(){
 }
 
 void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,const uint8_t *sys, bool isSendToComputer, bool isSendToUSBHost){
-  // printMIDI(type, data1, data2, channel );
   po_control->execute(type, channel, data1, data2, clk->getBpm());
   mtype = (midi::MidiType)type;
   if (type == 0xFA || type == 0xFB || type == 0xFC){ //process transport msgs
@@ -380,7 +386,6 @@ void processMidi(uint8_t type,uint8_t channel , uint8_t data1, uint8_t data2,con
     MIDI2.send(mtype, data1, data2, channel);
     sendToUSBHost(mtype, data1, data2, channel);
   }
-  
 }
 
 void printMIDI(byte type, byte data1, byte data2, byte channel ){

@@ -29,6 +29,9 @@
 
 #include "po_control.h"
 
+#define BUTTON_PRESS_DELAY_MS 20
+#define KNOB_DELAY_MS 20
+
 void printArray( uint8_t a[][ 2 ] ) {
   // loop through array's rows
   for ( int i = 0; i < 16; ++i ) {
@@ -248,31 +251,31 @@ void PO_Control::releasePOControlNoteButton(uint8_t note){
 // ----------------Sub functions ------------
 void PO_Control::changeVolume(uint8_t vol){
   digitalWrite(PO_BUTTON_BPM, LOW);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(_note_map[vol][1], LOW);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(_note_map[vol][1], HIGH);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(PO_BUTTON_BPM, HIGH);
 }
 
 void PO_Control::changeSound(uint8_t sound){
   digitalWrite(PO_BUTTON_SOUND, LOW);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(_note_map[sound][1], LOW);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(_note_map[sound][1], HIGH);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(PO_BUTTON_SOUND, HIGH);
 }
 
 void PO_Control::changePattern(uint8_t pattern){
   digitalWrite(PO_BUTTON_PATTERN, LOW);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(_note_map[pattern][1], LOW);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(_note_map[pattern][1], HIGH);
-  delay(KNOB_DELAY);
+  delay(KNOB_DELAY_MS);
   digitalWrite(PO_BUTTON_PATTERN, HIGH);
 }
 
@@ -280,7 +283,7 @@ void PO_Control::startOrStopPlayback(){
   for (uint8_t i = 0 ; i < LEN(_transport_note_map) ; i++){
     if(_transport_note_map[i][1] == PO_BUTTON_PLAY){
       digitalWriteFast(_transport_note_map[i][1], LOW);
-      delay(20);
+      delay(BUTTON_PRESS_DELAY_MS);
       digitalWriteFast(_transport_note_map[i][1], HIGH);
     }
   }
@@ -321,7 +324,7 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
             digitalWrite(PO_BUTTON_FX,HIGH);
             if(_is_write_mode){
               digitalWrite(PO_BUTTON_WRITE,LOW);
-              delay(20);
+              delay(BUTTON_PRESS_DELAY_MS);
               digitalWrite(PO_BUTTON_WRITE,HIGH);
               _is_write_mode = false;
             }
@@ -331,7 +334,7 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
             digitalWrite(PO_BUTTON_SPECIAL,HIGH);
             if(_is_write_mode){
               digitalWrite(PO_BUTTON_WRITE,LOW);
-              delay(20);
+              delay(BUTTON_PRESS_DELAY_MS);
               digitalWrite(PO_BUTTON_WRITE,HIGH);
               _is_write_mode = false;
             }
@@ -341,7 +344,7 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
             digitalWrite(PO_BUTTON_SPECIAL,LOW);
             if(_is_write_mode){
               digitalWrite(PO_BUTTON_WRITE,LOW);
-              delay(20);
+              delay(BUTTON_PRESS_DELAY_MS);
               digitalWrite(PO_BUTTON_WRITE,HIGH);
               _is_write_mode = false;
             }
@@ -351,7 +354,7 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
             digitalWrite(PO_BUTTON_SPECIAL,HIGH);
             if(!_is_write_mode){
               digitalWrite(PO_BUTTON_WRITE,LOW);
-              delay(20);
+              delay(BUTTON_PRESS_DELAY_MS);
               digitalWrite(PO_BUTTON_WRITE,HIGH);
               _is_write_mode = true;
             }
