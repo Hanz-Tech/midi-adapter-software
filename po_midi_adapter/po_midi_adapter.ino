@@ -4,9 +4,8 @@
 #include "clock.h"
 #include <Arduino.h>
 #include "po_control.h"
+#include "global.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
-
-#define FIRMWARE_VERSION "2.3.5"
 
 // Create the Serial MIDI portsm
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI1);
@@ -119,9 +118,9 @@ void setup() {
   }
 
   Serial.begin(115200);
-  Serial.println("PO-MA");
-  Serial.println("Firmware Version");
-  Serial.println(FIRMWARE_VERSION);
+  // Serial.println("PO-MA");
+  // Serial.println("Firmware Version");
+  // Serial.println(FIRMWARE_VERSION);
 }
 
 void loop() {
@@ -131,6 +130,10 @@ void loop() {
   activity = false;
   if(po_control->get_sync_out_enabled()){
     clk->sendBPM(millis());
+  }
+
+  if (Serial.available() > 0) {
+    po_control->checkForConfigUpdate();
   }
   // Next read messages arriving from the (up to) 10 USB devices plugged into the USB Host port
   for (int port=0; port < 1; port++) {

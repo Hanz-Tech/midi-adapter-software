@@ -1,12 +1,42 @@
-#ifndef SD_LOAD_H
-#define SD_LOAD_H
+/*!
+ *  @file       storage.h
+ *  Project     Pocket Operator MIDI Adapter
+ *  @brief      Pocket Operator MIDI Adapter
+ *  @author     Hanz Tech Inc
+ *  @date       2022/03/06
+ *  @license    MIT - Copyright (c) 2022 Hanz Tech Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#ifndef STORAGE_H
+#define STORAGE_H
 #include <SD.h>
 #include <SPI.h>
 #include <Arduino.h>
 #include <SDConfigFile.h>
+#include <EEPROM.h>
+#include <ArduinoJson.h>
 #include "po_settings.h"
+#include "global.h"
 #define LEN(arr) ((uint8_t) (sizeof (arr) / sizeof (arr)[0]))
-class SD_Load{
+class Storage{
     private:
       int _po_midi_channel = 1;
       int _synth_midi_channel = 2;
@@ -21,6 +51,7 @@ class SD_Load{
       int _looper_autoplay = 1;
       int _looper_transport_control_link = 1;
       int _looper_quantized = 0;
+      int _esp32_enabled = 1;
       //Midi Notes, these are used to trigger button 1-16 and sound,pattern.bpm....
       uint8_t _midi_note[24] = { //These are midi notes value
           0,
@@ -219,7 +250,9 @@ class SD_Load{
         "midi_note_loop_clear"
       };
       bool loadSDConfig();
-
+      bool loadEepromConfig();
+      bool readEeprom(DynamicJsonDocument& po_config);
+      bool writeEeprom(DynamicJsonDocument& json);
       void printArray( uint8_t a[][ 2 ] ) {
         // loop through array's rows
         for ( int i = 0; i < 16; ++i ) {
@@ -230,9 +263,8 @@ class SD_Load{
         } 
       // end outer for
       } 
-      
     public:
-      SD_Load();
+      Storage();
       int get_po_midi_channel(){ return _po_midi_channel; }
       int get_synth_midi_channel(){ return _synth_midi_channel; }
       int get_disable_transport(){ return _disable_transport; }
@@ -246,6 +278,7 @@ class SD_Load{
       int get_is_looper_autoplay(){ return _looper_autoplay; }
       int get_looper_transport_control_link(){ return _looper_transport_control_link; }
       int get_is_looper_quantized(){ return _looper_quantized; }
+      int get_is_esp32_enabled() { return _esp32_enabled; }
       
       void get_note_map(uint8_t note_map[23][2]) { 
         for (int i = 0; i < 23; i++){
@@ -279,6 +312,8 @@ class SD_Load{
           midi_cc_knob[i] = _midi_cc_knob[i];
         }
       }
+      bool checkforUpdate();
+
 };
 
 #endif
