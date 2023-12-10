@@ -295,7 +295,7 @@ bool Storage::loadEepromConfig(){
   _sync_out_enabled = _cur_po_config["sync_out_enabled"];
   _midi_ppqn = _cur_po_config["midi_ppqn"];
   _looper_enabled = _cur_po_config["looper_enabled"];
-  _looper_autoplay = _cur_po_config["looper_autoplay"];
+  _looper_autoplay = _cur_po_config["looper_autoplay_after_record"];
   _looper_transport_control_link =_cur_po_config["looper_transport_control_link"];
   _looper_quantized = _cur_po_config["looper_quantized"];
   // _esp32_enabled = _cur_po_config["ble_midi_enabled"];
@@ -346,16 +346,21 @@ bool Storage::checkforUpdate() {
         _cmdStats["status"] = "deserializeJson() failed: ";
         _cmdStats["error"] = error.c_str();
         serializeJson(_cmdStats, Serial);
+        return false;
   } else {
     String command = _serial_json["command"];
     if(command.equals("READALL")){
       serializeJson(_cur_po_config, Serial);
+      return false;
     } else if (command.equals("SAVEALL")) {
       this->writeEeprom(_serial_json);
+      return true;
     } else {    
       _cmdStats["status"] = "Unknown command";
       _cmdStats["command"] = _serial_json["command"];
       serializeJson(_cmdStats, Serial);
+      return false;
     }
   }
+  return false;
 }

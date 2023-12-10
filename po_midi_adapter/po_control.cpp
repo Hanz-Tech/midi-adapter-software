@@ -329,6 +329,21 @@ void PO_Control::execute(uint8_t type, uint8_t channel, uint8_t data1, uint8_t d
 }
 
 void PO_Control::checkForConfigUpdate(){
-  _config->checkforUpdate();
-
+  if(_config->checkforUpdate()){
+    _po_midi_channel = _config->get_po_midi_channel();
+    _disable_transport = _config->get_disable_transport(); //1 == disable transport, 0 == enabled transport
+    _po_cc_control = _config->get_po_cc_control(); //0 == disable , 1 ==enable
+    _volca_fm_velocity = _config->get_volca_fm_velocity(); // 1 == enable, 0 == disable
+    _volca_fm_midi_ch_1 = _config->get_volca_fm_midi_ch_1();
+    _volca_fm_midi_ch_2 = _config->get_volca_fm_midi_ch_2();
+    _sync_out_enabled = _config->get_sync_out_enabled();
+    _midi_ppqn = _config->get_midi_ppqn();
+    _config->get_note_map(_note_map);
+    _config->get_transport_note_map(_transport_note_map);
+    _config->get_midi_cc_knob(_midi_cc_knob);
+    _config->get_record_note_map(_record_note_map);
+    _config->get_looper_control(_looper_control);
+    _looper_transport_control_link = _config->get_looper_transport_control_link();
+    _is_looper_quantized = _config->get_is_looper_quantized();
+  }
 }
